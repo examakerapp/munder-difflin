@@ -287,7 +287,9 @@ export function FullscreenTerminal({ config }: FullscreenTerminalProps) {
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'var(--cth-cream-100)',
+      // v0.6.0: lighter middle band; the title bar and roster rail carry the
+      // heavier chrome tone around it.
+      background: 'var(--cth-cream-50)',
       zIndex: 250,
       display: 'flex',
       flexDirection: 'column',
@@ -306,7 +308,7 @@ export function FullscreenTerminal({ config }: FullscreenTerminalProps) {
           // reserve (macOS traffic lights) only applied on macOS instead of
           // unconditionally.
           position: 'absolute', top: 0, left: 0, right: 0, minHeight: 36,
-          background: 'linear-gradient(180deg, var(--cth-cream-100) 0%, var(--cth-cream-200) 100%)',
+          background: 'var(--cth-cream-200)',
           borderBottom: '1px solid var(--cth-ink-300)',
           display: 'flex', alignItems: 'center',
           paddingLeft: window.cth.platform === 'darwin' ? 96 : 12,

@@ -289,7 +289,11 @@ export function App() {
           // against this bar's own top/bottom edges, reading as cramped/
           // clipped rather than comfortably inset.
           minHeight: 36,
-          background: 'linear-gradient(180deg, var(--cth-cream-100) 0%, var(--cth-cream-200) 100%)',
+          // v0.6.0: three-band contrast — the title bar and the agent strip at
+          // the bottom share one slightly heavier tone, and the content between
+          // them sits on a lighter surface, so the window reads as chrome /
+          // work area / chrome instead of one flat field.
+          background: 'var(--cth-cream-200)',
           borderBottom: '1px solid var(--cth-ink-300)',
           display: 'flex',
           alignItems: 'center',

@@ -164,13 +164,13 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
     // (borderBottom on the header/tab-bar below) still separate the parts;
     // only the OUTER card border + offset shadow is gone.
     <div
-      style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: 'var(--cth-cream-100)' }}
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: 'var(--cth-cream-50)' }}
     >
       {/* Header — v0.6.0: more vertical padding (6px -> 10px) for breathing
           room around the avatar/buttons, per direct request. */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        padding: '10px 12px', background: 'var(--cth-cream-100)',
+        padding: '10px 12px', background: 'var(--cth-cream-50)',
         borderBottom: '1px solid var(--cth-ink-300)', flexShrink: 0
       }}>
         <div style={{
@@ -277,7 +277,7 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
         overflowX: fullscreen ? 'auto' : 'visible',
         // v0.6.0: more vertical padding (6px -> 10px) around the tab pills,
         // per direct request.
-        padding: '10px 8px', background: 'var(--cth-cream-100)',
+        padding: '10px 8px', background: 'var(--cth-cream-50)',
         borderBottom: '1px solid var(--cth-ink-300)', flexShrink: 0
       }}>
         {visibleTabs.map((tabDef, i) => (

@@ -198,8 +198,10 @@ export function MessageQueueComposer({ agent }: MessageQueueComposerProps) {
       onDrop={onDrop}
       style={{
         flexShrink: 0,
-        borderTop: '1px solid var(--cth-ink-700)',
-        background: 'var(--cth-cream-100)',
+        // v0.6.0: same subtle divider weight and middle-band surface as the
+        // rest of the command-center column.
+        borderTop: '1px solid var(--cth-ink-300)',
+        background: 'var(--cth-cream-50)',
         display: 'flex',
         flexDirection: 'column',
         gap: 6,

@@ -31,7 +31,7 @@ export function SidebarTabs({ current, accent, onChange }: SidebarTabsProps) {
       display: 'flex',
       gap: 4,
       padding: 6,
-      background: 'var(--cth-cream-200)',
+      background: 'var(--cth-cream-50)',
       flexShrink: 0
     }}>
       {TABS.map(tab => {
@@ -49,7 +49,7 @@ export function SidebarTabs({ current, accent, onChange }: SidebarTabsProps) {
               borderRadius: 'var(--cth-radius-pill)',
               // v0.6.0: brand orange for the active tab, not the agent's own
               // accent — matches the mockup's single-accent nav treatment.
-              background: active ? 'var(--cth-primary)' : 'var(--cth-cream-100)',
+              background: active ? 'var(--cth-primary)' : 'var(--cth-cream-200)',
               boxShadow: active
                 ? 'inset 0 0 0 1px var(--cth-ink-300)'
                 : 'inset 0 0 0 1px var(--cth-ink-100)',

@@ -132,15 +132,15 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
         flexDirection: 'column',
         height: '100%',
         overflow: 'hidden',
-        background: 'var(--cth-cream-100)'
+        background: 'var(--cth-cream-50)'
       }}
     >
       {/* Thin header strip */}
       <div ref={headerRef} style={{
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '6px 8px',
-        background: 'var(--cth-cream-100)',
-        borderBottom: '1px solid var(--cth-ink-700)',
+        background: 'var(--cth-cream-50)',
+        borderBottom: '1px solid var(--cth-ink-300)',
         flexShrink: 0
       }}>
         <div style={{
