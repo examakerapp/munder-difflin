@@ -315,7 +315,10 @@ export function FullscreenTerminal({ config }: FullscreenTerminalProps) {
         }}
       >
         <span style={{
-          fontFamily: 'var(--cth-font-display)', fontSize: 12, lineHeight: '20px',
+          // v0.6.0: pixel face restored on direct request, same as the
+          // Command Center title/IDE button/Queue label/agent names —
+          // --cth-font-display now resolves to the UI font everywhere else.
+          fontFamily: 'var(--cth-font-pixel)', fontSize: 9, lineHeight: '20px',
           color: 'var(--cth-ink-900)'
         }}>MUNDER DIFFLIN · FOCUS MODE</span>
         {/* Same top-right controls as the main title bar — fullscreen covers
