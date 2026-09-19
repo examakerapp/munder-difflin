@@ -238,9 +238,12 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
               className="cth-tip cth-tip-wrap"
               data-tip={t('commandCenter.ideTitle')}
               aria-label={t('commandCenter.openIdeAria')}
-              // v0.6.0: pixel face restored on direct request, same reasoning
-              // as the title above.
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'var(--cth-font-pixel)' }}
+              // No font override: this is a BUTTON, so it takes PixelButton's
+              // own face like every other one. It briefly carried the pixel
+              // display face — that call was made for the panel TITLE beside
+              // it and copied down here, where it just made one button in a
+              // pair look unlike its neighbour.
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
             >
               <Icon name="code" /> {t('commandCenter.ide')}
             </span>
