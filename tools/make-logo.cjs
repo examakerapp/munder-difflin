@@ -337,26 +337,45 @@ write('docs/logo-light.png', rasterise(512, grid, 'mark', BORDERS.warm));
 write('docs/favicon-32.png', rasterise(32, grid, 'mark', BORDERS.ink));
 write('docs/apple-touch-icon.png', rasterise(180, grid, 'mark', BORDERS.ink));
 
-// App icons.
-write('build/icon.svg', Buffer.from(buildSvg(1024, grid, 'icon', BORDERS.ink)));
-write('build/icon.png', rasterise(1024, grid, 'icon', BORDERS.ink));
-write('build/icon.ico', buildIco([16, 32, 48, 64, 128, 256].map((size) => ({
-  size, data: rasterise(size, grid, 'mark', BORDERS.ink)
-}))));
+// App icons — OPT-IN, and off by default.
+//
+// build/icon.{svg,png,ico,icns} are no longer generated from the sprite: the
+// shipping app icon is now built from a hand-made source image (see
+// tools/make-app-icon.mjs). Regenerating them here would silently revert that,
+// and a reverted app icon is not something you notice until you look at a
+// packaged build, so this half of the script now has to be asked for:
+//
+//   node tools/make-logo.cjs --with-app-icon
+//
+// The docs/ rasters above are still generated every run — they are the site
+// and README mark, which IS the sprite, and nothing else writes them.
+//
+// Side benefit: the iconset step below shells out to `iconutil`, which only
+// exists on macOS, so skipping it by default is what makes this script
+// runnable on Windows and Linux at all.
+if (process.argv.includes('--with-app-icon')) {
+  write('build/icon.svg', Buffer.from(buildSvg(1024, grid, 'icon', BORDERS.ink)));
+  write('build/icon.png', rasterise(1024, grid, 'icon', BORDERS.ink));
+  write('build/icon.ico', buildIco([16, 32, 48, 64, 128, 256].map((size) => ({
+    size, data: rasterise(size, grid, 'mark', BORDERS.ink)
+  }))));
 
-// macOS .icns via iconutil, from a margined+shadowed iconset.
-const setDir = D('build/icon.iconset');
-fs.rmSync(setDir, { recursive: true, force: true });
-fs.mkdirSync(setDir, { recursive: true });
-for (const [name, size] of [
-  ['icon_16x16', 16], ['icon_16x16@2x', 32], ['icon_32x32', 32], ['icon_32x32@2x', 64],
-  ['icon_128x128', 128], ['icon_128x128@2x', 256], ['icon_256x256', 256],
-  ['icon_256x256@2x', 512], ['icon_512x512', 512], ['icon_512x512@2x', 1024]
-]) {
-  fs.writeFileSync(path.join(setDir, `${name}.png`), rasterise(size, grid, 'icon', BORDERS.ink));
+  // macOS .icns via iconutil, from a margined+shadowed iconset.
+  const setDir = D('build/icon.iconset');
+  fs.rmSync(setDir, { recursive: true, force: true });
+  fs.mkdirSync(setDir, { recursive: true });
+  for (const [name, size] of [
+    ['icon_16x16', 16], ['icon_16x16@2x', 32], ['icon_32x32', 32], ['icon_32x32@2x', 64],
+    ['icon_128x128', 128], ['icon_128x128@2x', 256], ['icon_256x256', 256],
+    ['icon_256x256@2x', 512], ['icon_512x512', 512], ['icon_512x512@2x', 1024]
+  ]) {
+    fs.writeFileSync(path.join(setDir, `${name}.png`), rasterise(size, grid, 'icon', BORDERS.ink));
+  }
+  execFileSync('iconutil', ['-c', 'icns', setDir, '-o', D('build/icon.icns')]);
+  fs.rmSync(setDir, { recursive: true, force: true });
+  wrote.push(`build/icon.icns              ${(fs.statSync(D('build/icon.icns')).size / 1024).toFixed(1)} KB`);
+} else {
+  wrote.push('build/icon.*                 SKIPPED — hand-made source, pass --with-app-icon to regenerate');
 }
-execFileSync('iconutil', ['-c', 'icns', setDir, '-o', D('build/icon.icns')]);
-fs.rmSync(setDir, { recursive: true, force: true });
-wrote.push(`build/icon.icns              ${(fs.statSync(D('build/icon.icns')).size / 1024).toFixed(1)} KB`);
 
 console.log(wrote.join('\n'));
