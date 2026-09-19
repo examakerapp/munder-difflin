@@ -295,7 +295,10 @@ export function AgentCard({
                     // `.pill.role`), white text for contrast against the
                     // saturated orange fill (not the agent's own accent).
                     background: 'var(--cth-primary)', color: 'var(--cth-on-primary)',
-                    padding: '2px 8px 0', flexShrink: 0
+                    // Symmetric, same as PixelBadge — see the note there. Still
+                    // 1+18+1 = 20px, which is the box height this pill is
+                    // matched to the status chip on.
+                    padding: '1px 8px', flexShrink: 0
                   }}>{t('agentCard.boss')}</span>
                 )}
               </span>

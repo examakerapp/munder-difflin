@@ -62,7 +62,14 @@ export function PixelBadge({ status, label, style }: PixelBadgeProps) {
         // under the controls beside it instead of holding its own width.
         flexShrink: 0,
         gap: 6,
-        padding: '2px 8px 0',
+        // Symmetric vertical padding. This was '2px 8px 0' — 2px above, none
+        // below — which pushed the dot and the label onto the bottom edge.
+        // alignItems: 'center' could not help: it centres within the content
+        // box, and the asymmetric padding was moving the box itself.
+        // 1+18+1 keeps the chip at exactly 20px, which the BOSS badge in
+        // AgentCard is deliberately matched to, so fixing the alignment does
+        // not knock the two out of line.
+        padding: '1px 8px',
         background: 'var(--cth-cream-100)',
         boxShadow: `inset 0 0 0 1px ${colorByStatus[status]}, 2px 2px 0 0 ${colorByStatus[status]}`,
         fontFamily: 'var(--cth-font-ui)',
