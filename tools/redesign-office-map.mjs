@@ -143,8 +143,6 @@ const MAT = [[1698, 1699], [1714, 1715]];
 // and clocks. It is not a mat: painted on the floor it renders as a dark
 // framed panel, which is the second "stray device" in the break room. The 2x2
 // MAT above is the only floor mat this tileset actually has.
-const FLIP_H = 0x80000000;
-const FLIP_V = 0x40000000;
 
 const solid = (x, y) => set('collision', x, y, 1);
 const clearSolid = (x, y) => set('collision', x, y, 0);
@@ -194,19 +192,11 @@ function stamp(asset, ox, oy) {
   for (const [dx, dy, gid] of asset.above) set('furniture-above', ox + dx, oy + dy, gid);
   for (const [dx, dy] of asset.coll) solid(ox + dx, oy + dy);
 }
-/** Same asset turned 180 degrees: both axes reverse and both flip bits toggle.
- *  A mat is a self-contained rug with its own border, so a plain left-right
- *  mirror still butts two near-identical borders together; turning the second
- *  one around is what makes a facing pair read as one piece. */
-function stampRotated180(asset, ox, oy) {
-  const rot = (cells, layer) => {
-    for (const [dx, dy, gid] of cells) {
-      set(layer, ox + (asset.w - 1 - dx), oy + (asset.h - 1 - dy), (gid ^ FLIP_H ^ FLIP_V) >>> 0);
-    }
-  };
-  rot(asset.floor, 'floor'); rot(asset.below, 'furniture-below'); rot(asset.above, 'furniture-above');
-  for (const [dx, dy] of asset.coll) solid(ox + (asset.w - 1 - dx), oy + (asset.h - 1 - dy));
-}
+// No stampRotated180. It was used to turn the second lounge group of a pair
+// around so the two would "face" each other, but this art is drawn in a fixed
+// 3/4 projection: flipping it vertically turns the rug's shading upside down
+// and stands the chairs on their backs. Every piece goes down in the one
+// orientation it was drawn in, the way the hand-made room places them.
 /** Free-standing plant: one tile, sits on the floor. */
 function plant(x, y, variant = 0) {
   set('furniture-below', x, y, PLANT_FLOOR[variant % PLANT_FLOOR.length]); solid(x, y);
@@ -304,7 +294,7 @@ stamp(TABLE, 33, 48);
 // props dropped in the middle of a 7-row band just read as litter, so the
 // dispenser and bin sit together against the wall like a real one.
 stamp(LOUNGE_GROUP, 7, 23);
-stampRotated180(LOUNGE_GROUP, 48, 23);
+stamp(LOUNGE_GROUP, 48, 23);
 wallPlant(24, 21); wallPlant(34, 21);   // hang off the rooms' bottom wall
 dispenser(18, 22, 0); bin(19, 22);
 dispenser(41, 22, 1); bin(42, 22);
@@ -350,7 +340,7 @@ doorH(DOOR_X, DOOR_X + 1, H - 1);
 const ENTRANCE = { x: DOOR_X, y: H - 2 };
 mat(DOOR_X, H - 3);                  // welcome mat inside the doorway
 stamp(LOUNGE_GROUP, 20, 56);
-stampRotated180(LOUNGE_GROUP, 34, 56);
+stamp(LOUNGE_GROUP, 34, 56);
 plant(24, 62, 2);
 plant(33, 62, 0);
 
