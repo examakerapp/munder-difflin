@@ -181,7 +181,10 @@ test('English is still the default, and still not auto-detected', () => {
 
 test('ar is registered everywhere a language has to be registered', () => {
   const src = read('src/renderer/src/i18n/index.ts');
-  assert.match(src, /ar: \{ translation: ar \}/, 'ar is missing from resources');
+  // Allows the resource to be wrapped by a transform — this fork passes each
+  // bundle through rebrand() on the way in (see src/shared/brand.ts). What this
+  // asserts is that `ar` is REGISTERED, not how it is spelled at the call site.
+  assert.match(src, /ar: \{ translation: (?:[A-Za-z_$][\w$]*\()?ar\)? \}/, 'ar is missing from resources');
   assert.match(src, /supportedLngs: \[[^\]]*'ar'[^\]]*\]/, 'ar is missing from supportedLngs');
   assert.match(src, /code: 'ar'[^}]*dir: 'rtl'/, 'ar is not marked right-to-left');
 });

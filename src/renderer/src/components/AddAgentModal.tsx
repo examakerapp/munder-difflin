@@ -29,6 +29,7 @@ import {
   providerPreset,
   isClaudeProvider
 } from '@/store/config';
+import { withPermissionStance } from '@shared/agentProvider';
 import { useRtl } from '@/i18n/useDirection';
 
 const ACCENTS: AccentColorName[] = ['coral', 'mint', 'sky', 'lemon', 'lilac', 'peach'];
@@ -202,6 +203,11 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
   const [command, setCommand] = useState(
     pendingHire ? hireCommand(pendingHire) : buildSpawnCommand(config, initialModel, initialProvider)
   );
+  // True when the command names a permission posture that is NOT the bypass —
+  // i.e. this agent will stop and ask. Derived from the command text rather
+  // than held as its own state, so it can never disagree with the field (which
+  // stays hand-editable, and gets rebuilt wholesale when the model changes).
+  const asksPermission = /--permission-mode[=\s]+(?!bypassPermissions\b)\S+/.test(command);
   const [description, setDescription] = useState(pendingHire?.description ?? 'a fresh harness');
   const [hireMeta, setHireMeta] = useState<HireManifest | null>(pendingHire);
 
@@ -1027,6 +1033,39 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                         style={{ ...inputStyle, fontFamily: 'var(--cth-font-mono)' }}
                       />
                     </Row>
+
+                    {/* Per-agent permission posture.
+                        Auto mode appends its bypass flag only when the command
+                        does not ALREADY state a posture (hasAutoModeStance /
+                        argsWithAutoModeFlag in shared/agentProvider.ts). So
+                        naming a --permission-mode here is what exempts this one
+                        agent while the rest of the floor stays on auto.
+                        That mechanism already existed; it was just invisible
+                        unless you knew to hand-type the flag.
+                        Claude-family only: providers whose auto flag is a bare
+                        on/off switch (--yolo, --auto) have no "ask" token to
+                        write, so auto mode would re-append regardless and a
+                        checkbox here would quietly lie. */}
+                    {isClaudeProvider(provider) && (
+                      <Row label={tr('addAgent.permission')}>
+                        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
+                          <input
+                            type="checkbox"
+                            checked={asksPermission}
+                            onChange={(e) => setCommand(withPermissionStance(command, e.target.checked))}
+                            style={{ marginTop: 3, flexShrink: 0 }}
+                          />
+                          <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-700)' }}>
+                            {tr('addAgent.permissionAsk')}
+                            <span style={{ display: 'block', color: 'var(--cth-ink-500)', fontSize: 11 }}>
+                              {config.autoMode
+                                ? tr('addAgent.permissionAskHint')
+                                : tr('addAgent.permissionAskHintAutoOff')}
+                            </span>
+                          </span>
+                        </label>
+                      </Row>
+                    )}
                   </>
                 )}
 

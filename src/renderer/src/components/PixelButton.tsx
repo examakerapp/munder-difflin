@@ -28,9 +28,11 @@ export interface PixelButtonProps {
 // `.btn-icon3d` — not a further tuning of the old approximation. Concretely:
 //   - a REAL `border` (2px solid), not this app's usual inset-box-shadow
 //     border technique
-//   - a REAL vertical-only offset shadow (`0 4px 0 <color>`) that collapses
+//   - a REAL vertical-only offset shadow (`0 LIPpx 0 <color>`) that collapses
 //     to `0 0 0 <color>` on press while the button translates down by that
-//     same 4px — the reference's exact "pressed sticker" mechanic
+//     same LIP — the reference's exact "pressed sticker" mechanic. The
+//     reference uses 4px; we run 3px (see LIP) because at 4 it read as a
+//     second border rather than a raised edge.
 //   - disabled = opacity 0.45 (0.4 for icon buttons) + border/shadow color
 //     swapped to a neutral track tone, fill and text otherwise UNCHANGED —
 //     the reference never tints disabled toward a pastel variant color, it
@@ -48,6 +50,10 @@ const fontSizeBySize: Record<Size, number> = { sm: 12, md: 13, lg: 13.5 };
  *  reference's `--track` (a light divider fill), not this app's own accent
  *  border faded via opacity (which would still read as tinted). */
 const DISABLED_LINE = 'var(--cth-ink-100)';
+/** Depth of the solid offset "lip" under a button, in px, and therefore also
+ *  the distance it travels on press so it lands flush. Text and icon buttons
+ *  share it so the two can't drift apart. */
+const LIP = 3;
 
 export function PixelButton({
   variant = 'primary',
@@ -156,8 +162,8 @@ export function PixelButton({
           background: iconFill,
           color: disabled ? 'var(--cth-ink-300)' : 'var(--cth-ink-900)',
           border: `2px solid ${iconBorder}`,
-          boxShadow: pressed && !disabled ? `0 0 0 ${iconShadow}` : `0 3px 0 ${iconShadow}`,
-          transform: pressed && !disabled ? 'translateY(3px)' : 'none',
+          boxShadow: pressed && !disabled ? `0 0 0 ${iconShadow}` : `0 ${LIP}px 0 ${iconShadow}`,
+          transform: pressed && !disabled ? `translateY(${LIP}px)` : 'none',
           fontSize: 15,
           lineHeight: 1,
           cursor: disabled ? 'not-allowed' : 'pointer',
@@ -207,12 +213,17 @@ export function PixelButton({
         // The reference's exact mechanic: a solid VERTICAL offset ("sticker")
         // that collapses to flush + a matching translateY on press, rather
         // than this app's usual inset-ring technique.
+        // v0.6.0: lip trimmed 4px -> 3px, per direct request ("a little bit
+        // less weight on the bottom") — at 4px it read as a second border
+        // rather than a raised edge. LIP is shared by the shadow and the press
+        // transform on purpose: if they ever disagree the button stops landing
+        // flush when pressed.
         boxShadow: disabled
-          ? `0 4px 0 ${DISABLED_LINE}`
+          ? `0 ${LIP}px 0 ${DISABLED_LINE}`
           : pressed
           ? `0 0 0 ${palette.lip}`
-          : `0 4px 0 ${palette.lip}`,
-        transform: pressed && !disabled ? 'translateY(4px)' : 'none',
+          : `0 ${LIP}px 0 ${palette.lip}`,
+        transform: pressed && !disabled ? `translateY(${LIP}px)` : 'none',
         fontFamily: 'var(--cth-font-ui)',
         fontSize: fontSizeBySize[size],
         fontWeight: 800,

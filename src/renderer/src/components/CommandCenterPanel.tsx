@@ -6,6 +6,8 @@ import { SpritePortrait } from './SpritePortrait';
 import { PtyTerminalView } from './PtyTerminalView';
 import { MessageQueueComposer } from './MessageQueueComposer';
 import { TasksKanban } from './TasksKanban';
+import { HiveChat } from './HiveChat';
+import { useAskCount } from '@/hooks/useAskCount';
 import { AskMeTab } from './AskMeTab';
 import { TriggersTab } from './triggers/TriggersTab';
 import { TriggerHistoryTab } from './triggers/TriggerHistoryTab';
@@ -45,7 +47,7 @@ import { useRtl } from '@/i18n/useDirection';
 // Both the AskMe (#human) tab and the Triggers tab live here. Triggers replaced
 // the old Schedules tab: schedules are now one of four trigger types, and the
 // whole surface lives in ./triggers (see src/shared/triggers.ts for the contract).
-type CCTab = 'terminal' | 'floor' | 'tasks' | 'human' | 'triggers' | 'trigger-history'
+type CCTab = 'terminal' | 'chat' | 'floor' | 'tasks' | 'human' | 'triggers' | 'trigger-history'
   | 'memory' | 'graph' | 'activity' | 'skills' | 'workers';
 
 /** Fallback denominator for the per-agent token meter when no floor token budget
@@ -75,6 +77,7 @@ interface GHIssue {
 const TAB_GROUPS = ['work', 'automate', 'insights', 'configure'] as const;
 const TABS: { key: CCTab; labelKey: string; icon: Parameters<typeof Icon>[0]['name']; group: typeof TAB_GROUPS[number] }[] = [
   { key: 'terminal', labelKey: 'commandCenter.tabs.terminal', icon: 'terminal', group: 'work' },
+  { key: 'chat', labelKey: 'commandCenter.tabs.chat', icon: 'chat', group: 'work' },
   { key: 'tasks', labelKey: 'commandCenter.tabs.tasks', icon: 'check', group: 'work' },
   { key: 'human', labelKey: 'commandCenter.tabs.human', icon: 'mic', group: 'work' },
   { key: 'triggers', labelKey: 'commandCenter.tabs.triggers', icon: 'clock', group: 'automate' },
@@ -94,6 +97,7 @@ const TABS: { key: CCTab; labelKey: string; icon: Parameters<typeof Icon>[0]['na
 export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent; fullscreen?: boolean }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<CCTab>('terminal');
+  const askCount = useAskCount();
   // The trigger-history ledger has nothing to say until an outside party can
   // reach us, so its tab appears only once an org key or a webhook exists. This
   // is the first config-gated tab in the panel: TABS stays the canonical order
@@ -324,6 +328,24 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
             }}
           >
             <Icon name={tabDef.icon} /> {t(tabDef.labelKey)}
+            {/* Unanswered-ask count. Only ever on the ASK ME tab, and hidden at
+                zero so the strip is unchanged when nothing is waiting. This is
+                the one piece of nav that has to be legible without being
+                selected, so it keeps its own contrast rather than inheriting
+                the pill's on-accent colour. */}
+            {tabDef.key === 'human' && askCount > 0 && (
+              <span
+                aria-label={t('commandCenter.asksWaiting', { count: askCount })}
+                style={{
+                  minWidth: 16, height: 16, padding: '0 4px', boxSizing: 'border-box',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  borderRadius: 'var(--cth-radius-pill)',
+                  background: tab === tabDef.key ? 'var(--cth-on-primary)' : 'var(--cth-primary)',
+                  color: tab === tabDef.key ? 'var(--cth-primary)' : 'var(--cth-on-primary)',
+                  fontSize: 10, fontWeight: 700, lineHeight: 1
+                }}
+              >{askCount}</span>
+            )}
           </button>
           </Fragment>
         ))}
@@ -378,6 +400,8 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
             onJumpToMemory={(id) => { setSelectedMemoryAgent(id); setTab('memory'); }}
           />
         )}
+        {/* No peerId: the god's view is the whole floor's conversation. */}
+        {tab === 'chat' && <HiveChat />}
         {tab === 'activity' && <ActivityTab />}
         {tab === 'skills' && <SkillsTab agentCwd={agent.cwd} />}
         {tab === 'workers' && <WorkersTab />}

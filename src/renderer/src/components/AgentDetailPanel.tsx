@@ -9,7 +9,7 @@ import { MessageQueueComposer } from './MessageQueueComposer';
 import { CommandCenterPanel } from './CommandCenterPanel';
 import { disposeTerminal } from './terminalPool';
 import { SidebarTabs } from './SidebarTabs';
-import { ThreadsPanel } from './ThreadsPanel';
+import { HiveChat } from './HiveChat';
 import { ToolWaterfall } from './ToolWaterfall';
 import { AgentControlStrip } from './AgentControlStrip';
 import { EditAgentModal } from './EditAgentModal';
@@ -277,8 +277,13 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
           <GitTab cwd={agent.cwd} />
         )}
 
+        {/* v0.6.0: this slot used to be ThreadsPanel, which read hiveInbox and
+            so showed only what this agent RECEIVED — half a conversation. The
+            same chat surface the god's command center uses is scoped here to
+            this agent's exchange with the god, so you can read it without
+            switching back to the god every time. */}
         {sidebarTab === 'messages' && (
-          <ThreadsPanel agentId={agent.id} />
+          <HiveChat peerId={agent.id} />
         )}
 
         {sidebarTab === 'traces' && (

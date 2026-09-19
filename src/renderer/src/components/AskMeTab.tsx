@@ -94,8 +94,32 @@ export function AskMeTab() {
    * that case nothing is written and the draft is kept.
    */
 
-  const sendAnswer = async (task: HiveTask) => {
-    const text = (drafts[task.id] ?? '').trim();
+  /**
+   * Answer the open ask. `decision` turns it into an explicit approval or
+   * refusal instead of free prose.
+   *
+   * Why this exists: a great many asks are yes/no ("approve this spend",
+   * "shall I delete the branch"), and the only way to say yes used to be to
+   * type the word — which left the god parsing intent out of prose, and left
+   * the ledger with no machine-readable record of what was decided. A decision
+   * now rides on BOTH channels: the card's answer text opens with a fixed
+   * APPROVED/DENIED token, and the message to the god carries the matching
+   * `agree` / `refuse` act.
+   *
+   * Anything typed in the box still goes along as the rationale, so
+   * "approve with a caveat" is one click plus a sentence rather than a choice
+   * between the two.
+   *
+   * The decision words are deliberately NOT translated: this text is read by
+   * the god agent, whose whole protocol is English, and a localised "Approved."
+   * would be a downgrade in how reliably it is understood. The BUTTONS are
+   * translated — that half is read by a person.
+   */
+  const sendAnswer = async (task: HiveTask, decision: 'approve' | 'deny' | null = null) => {
+    const note = (drafts[task.id] ?? '').trim();
+    const text = decision === 'approve' ? (note ? `APPROVED. ${note}` : 'APPROVED.')
+      : decision === 'deny' ? (note ? `DENIED. ${note}` : 'DENIED.')
+        : note;
     const open = openQuestion(task);
     if (!text || !open || sending) return;
     setSending(task.id);
@@ -117,15 +141,23 @@ export function AskMeTab() {
       if (!result.ok) throw new Error('task changed before answer could be saved');
       setTasks(next);
       // 2) Tell the god, so the card gets unblocked and work continues.
+      // `agree` / `refuse` are real members of MessageAct that nothing had ever
+      // emitted — the memory graph already colours them (mint / coral), so an
+      // explicit decision now reads as one at a glance there too. A plain
+      // answer stays `inform`, exactly as before.
       await window.cth.hiveSend({
         to: 'god',
-        act: 'inform',
-        subject: `HUMAN ANSWER on task "${task.title}"`,
+        act: decision === 'approve' ? 'agree' : decision === 'deny' ? 'refuse' : 'inform',
+        subject: decision
+          ? `HUMAN DECISION (${decision === 'approve' ? 'APPROVED' : 'DENIED'}) on task "${task.title}"`
+          : `HUMAN ANSWER on task "${task.title}"`,
         body: [
           `The human answered the open question on task ${task.id} ("${task.title}"):`,
           `Q: ${open.q}`,
           `A: ${text}`,
-          'The answer is also recorded in the card\'s humanQA. Act on it, unblock the card, and continue the work.'
+          decision === 'deny'
+            ? 'This is a REFUSAL. Do not proceed with what was asked. Record the decision, unblock the card by taking the alternative path or closing it out, and continue the rest of the work.'
+            : 'The answer is also recorded in the card\'s humanQA. Act on it, unblock the card, and continue the work.'
         ].join('\n')
       }, 'human');
       setAnswerDraft(task.id, '');
@@ -246,13 +278,32 @@ export function AskMeTab() {
                   color: 'var(--cth-ink-900)', outline: 'none'
                 }}
               />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <PixelButton
                   variant="primary" size="sm"
                   disabled={!(drafts[t.id] ?? '').trim() || sending === t.id}
                   onClick={() => void sendAnswer(t)}
                 >
                   {sending === t.id ? translate('askMe.sending') : translate('askMe.respond')}
+                </PixelButton>
+                {/* Approve / Deny do not require the textarea — that is the
+                    point of them. Whatever IS typed rides along as the reason,
+                    so approving with a caveat stays one click. */}
+                <PixelButton
+                  variant="secondary" size="sm"
+                  disabled={sending === t.id}
+                  title={translate('askMe.approveTitle')}
+                  onClick={() => void sendAnswer(t, 'approve')}
+                >
+                  {translate('askMe.approve')}
+                </PixelButton>
+                <PixelButton
+                  variant="destructive" size="sm"
+                  disabled={sending === t.id}
+                  title={translate('askMe.denyTitle')}
+                  onClick={() => void sendAnswer(t, 'deny')}
+                >
+                  {translate('askMe.deny')}
                 </PixelButton>
                 {(t.humanQA?.filter((e) => e.a).length ?? 0) > 0 && (
                   <button

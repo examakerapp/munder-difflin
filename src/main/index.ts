@@ -8,6 +8,7 @@ import {
 import { randomBytes, createHash, timingSafeEqual } from 'node:crypto';
 import { join, resolve, sep, basename, dirname, isAbsolute } from 'node:path';
 import { homedir } from 'node:os';
+import { APP_NAME } from '../shared/brand';
 import { request as httpsRequest } from 'node:https';
 import { PtyManager, type SpawnOptions } from './pty';
 import { resolveCommand as resolveCliCommand, isSafeCommandName } from './shellEnv';
@@ -1655,6 +1656,89 @@ function stopSlackDoneObserver(): void {
   slackDoneBaseline = null;
 }
 
+// ─── ASK ME desktop notifications ────────────────────────────────────────────
+// A card the god blocks on the human used to be completely silent: it appeared
+// on the ASK ME board and the floor sign, both of which you only see if you are
+// already looking. An ask could therefore sit for hours purely because nothing
+// said it existed. This watches the same ledger and raises one OS toast per NEW
+// ask.
+//
+// Exactly-once, and quiet on startup — the baseline/seen discipline is lifted
+// straight from the Slack done-observer above. Without the baseline every
+// already-open ask would toast on launch, which is how a notification gets
+// switched off for good.
+let askWatchTimer: ReturnType<typeof setInterval> | null = null;
+/** Ask keys already toasted this session. */
+let askNotified: Set<string> | null = null;
+/** Keys open when the watcher started — never toasted, only recorded. */
+let askBaselined = false;
+const ASK_POLL_MS = 10_000;
+
+/** Stable identity for one ask: the card plus which question it is, so a second
+ *  question on the same card is a new notification and a re-read of the same
+ *  one is not. */
+function openAskKeys(): Map<string, string> {
+  const out = new Map<string, string>();
+  try {
+    const raw = hive.tasks() as { tasks?: Array<Record<string, unknown>> } | null;
+    const list = Array.isArray(raw?.tasks) ? raw!.tasks! : [];
+    for (const task of list) {
+      if (String(task?.status) !== 'blocked') continue;
+      const qa = task?.humanQA;
+      if (!Array.isArray(qa)) continue;
+      // Mirrors openQuestion() in TasksKanban: the LAST entry with a question,
+      // no answer and no dismissal. Kept in step deliberately — a toast for an
+      // ask the board does not show would be a lie.
+      for (let i = qa.length - 1; i >= 0; i--) {
+        const e = qa[i] as Record<string, unknown> | null;
+        if (!e || typeof e.q !== 'string' || e.a || e.dismissedAt) continue;
+        const id = String(task.id ?? '');
+        out.set(`${id}::${String(e.askedAt ?? e.q)}`, String(task.title ?? e.q));
+        break;
+      }
+    }
+  } catch { /* unreadable/missing tasks.json → treat as "nothing new" */ }
+  return out;
+}
+
+function pollAsks(): void {
+  const open = openAskKeys();
+  if (!askNotified) askNotified = new Set();
+  if (!askBaselined) {
+    for (const k of open.keys()) askNotified.add(k);
+    askBaselined = true;
+    return;
+  }
+  const fresh = [...open.entries()].filter(([k]) => !askNotified!.has(k));
+  for (const [k] of fresh) askNotified.add(k);
+  if (!fresh.length) return;
+  if (!readConfig().notifications) return;
+  // Don't toast over a window the user is already looking at — the count on the
+  // ASK ME tab is the in-app signal, and a toast on top of it is just noise.
+  if (BrowserWindow.getFocusedWindow()) return;
+  try {
+    if (!Notification.isSupported()) return;
+    const body = fresh.length === 1
+      ? fresh[0][1]
+      : `${fresh.length} tasks are waiting on your input.`;
+    new Notification({ title: 'Michael needs you', body }).show();
+  } catch { /* unsupported platform — never let a toast break the poll */ }
+}
+
+/** Begin watching for new human asks (idempotent). */
+function startAskWatcher(): void {
+  if (askWatchTimer) return;
+  askNotified = new Set();
+  askBaselined = false;          // first tick seeds, never notifies
+  askWatchTimer = setInterval(pollAsks, ASK_POLL_MS);
+}
+
+/** Stop watching. Safe to call when not running. */
+function stopAskWatcher(): void {
+  if (askWatchTimer) { clearInterval(askWatchTimer); askWatchTimer = null; }
+  askBaselined = false;
+}
+
 /** Build a SlackWebhookServer from the current config and start it, replacing
  *  any running instance, and return the start result (incl. the public tunnel
  *  URL the user pastes into Slack). No-op + error result when the integration is
@@ -2130,6 +2214,16 @@ interface WindowBounds { x?: number; y?: number; width: number; height: number }
 const DEFAULT_WIN = { width: 1440, height: 900 };
 const MIN_WIN = { width: 1280, height: 800 };
 
+/** Resolved once: the app icon to hand BrowserWindow in development.
+ *  .ico on Windows (multi-size, so the taskbar and Alt-Tab each pick the size
+ *  they want); the 1024 PNG elsewhere. Undefined in a packaged build, where
+ *  build/ is not shipped and the executable carries the icon itself. */
+const devWindowIcon = (() => {
+  const file = process.platform === 'win32' ? 'icon.ico' : 'icon.png';
+  const p = join(app.getAppPath(), 'build', file);
+  return existsSync(p) ? p : undefined;
+})();
+
 /** Validate + clamp restored bounds: enforce the minimum size, and drop a
  *  position that no longer lands on any connected display (monitor unplugged) so
  *  the window can't open off-screen. Returns null for unusable input. */
@@ -2292,7 +2386,21 @@ function createWindow(opts: { floor?: boolean } = {}): BrowserWindow {
     ...(geom && geom.x !== undefined && geom.y !== undefined ? { x: geom.x, y: geom.y } : {}),
     minWidth: MIN_WIN.width,
     minHeight: MIN_WIN.height,
-    title: isFloor ? 'Munder Difflin — Floor' : 'Munder Difflin',
+    title: isFloor ? `${APP_NAME} — Floor` : APP_NAME,
+    // Window + taskbar icon for `npm run dev`. A PACKAGED build never needs
+    // this: electron-builder bakes build/icon.ico into the executable's own
+    // resource table, and Windows reads the icon from there. But dev runs
+    // stock electron.exe, so without this the window and taskbar show the
+    // default Electron logo no matter what build/icon.* contains.
+    //
+    // build/ is deliberately not in electron-builder's `files`, so this path
+    // simply does not exist in a packaged app — hence the existsSync guard
+    // rather than a app.isPackaged check: it degrades to "no override", which
+    // is exactly what a packaged build wants.
+    //
+    // macOS ignores BrowserWindow.icon entirely (the dock icon comes from the
+    // .app bundle), so dev on a Mac still shows the Electron logo.
+    ...(devWindowIcon ? { icon: devWindowIcon } : {}),
     backgroundColor: '#FFF8E7',
     titleBarStyle: 'hiddenInset',
     show: false,
@@ -5277,6 +5385,11 @@ app.whenReady().then(() => {
   // setMicGate(true)); macOS TCC stays a second gate regardless.
   if (readConfig().realtimeVoiceEnabled) writeConfig({ realtimeVoiceEnabled: false });
 
+  // Watch the kanban for new human asks. Tied to app lifetime rather than to
+  // the Slack server (which is what the done-observer hangs off): a card the
+  // god blocks on you has nothing to do with whether Slack is configured.
+  startAskWatcher();
+
   // Anonymous product analytics (PostHog) — the full contract lives in
   // TELEMETRY.md. No-op unless a build-time key was injected (official releases
   // only), and gated on DO_NOT_TRACK + the telemetryEnabled config (opt-out).
@@ -5396,6 +5509,7 @@ app.on('window-all-closed', () => {
 // exactly what's left to do.
 let analyticsFlushed = false;
 app.on('will-quit', (e) => {
+  stopAskWatcher();
   if (analyticsFlushed) return;
   analyticsFlushed = true;
   e.preventDefault();

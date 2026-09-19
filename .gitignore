@@ -41,3 +41,7 @@ docs/blog-preview-*/
 
 # local Pro-theme reference screenshots — not for commit/push per direct request
 PRO workspace screenshots/
+
+# electron-vite drops these in the repo root when a dev server is killed
+# uncleanly; regenerated on the next launch.
+electron.vite.config.*.mjs
