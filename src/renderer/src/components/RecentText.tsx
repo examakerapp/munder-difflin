@@ -27,7 +27,7 @@ export function RecentText({ accent, text, seed }: RecentTextProps) {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         fontFamily: 'var(--cth-font-display)',
-        fontSize: 8, lineHeight: '12px',
+        fontSize: 11, lineHeight: '12px',
         color: 'var(--cth-ink-700)',
         textTransform: 'uppercase'
       }}>
@@ -39,7 +39,6 @@ export function RecentText({ accent, text, seed }: RecentTextProps) {
           <span style={{
             width: 6, height: 6,
             background: done ? 'var(--cth-ink-500)' : `var(--cth-${accent})`,
-            boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
             animation: done ? 'none' : 'cth-pulse 800ms steps(2, end) infinite'
           }} />
           {done ? 'idle' : 'live'}

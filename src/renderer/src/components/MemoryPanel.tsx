@@ -87,7 +87,7 @@ export function MemoryPanel() {
           style={{
             padding: '5px 10px 3px',
             background: active ? 'var(--cth-lemon-light)' : 'var(--cth-cream-200)',
-            boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500)',
+            boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)',
             fontFamily: 'var(--cth-font-ui)',
             fontSize: 12,
             color: 'var(--cth-ink-900)',
@@ -109,7 +109,7 @@ export function MemoryPanel() {
             {/* Status + on/off — the two things the user controls at a glance. */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'var(--cth-ink-900)', fontFamily: 'var(--cth-font-ui)' }}>
-                <span style={{ width: 9, height: 9, background: state.dot, boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)' }} />
+                <span style={{ width: 9, height: 9, background: state.dot }} />
                 {state.label}
               </span>
               {status?.available && (
@@ -127,7 +127,7 @@ export function MemoryPanel() {
             {!status?.available && (
               <div style={{
                 fontSize: 12, color: 'var(--cth-ink-700)', lineHeight: 1.6,
-                background: 'var(--cth-cream-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)', padding: 10
+                background: 'var(--cth-cream-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)', padding: 10
               }}>
                 {t('memoryPanel.notInstalled')}
                 {/* The commands used to be inlined here, hardcoded for macOS
@@ -176,7 +176,7 @@ export function MemoryPanel() {
                           flex: 1, textAlign: 'left', cursor: 'pointer', border: 'none',
                           padding: '7px 9px 6px',
                           background: sel ? 'var(--cth-lemon-light)' : 'var(--cth-cream-100)',
-                          boxShadow: sel ? 'inset 0 0 0 1.5px var(--cth-ink-500)' : 'inset 0 0 0 1px var(--cth-ink-300)',
+                          boxShadow: sel ? 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)' : 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
                           fontFamily: 'var(--cth-font-ui)'
                         }}
                       >
@@ -184,7 +184,7 @@ export function MemoryPanel() {
                           <span style={{
                             width: 8, height: 8, flexShrink: 0,
                             background: sel ? 'var(--cth-ink-900)' : 'transparent',
-                            boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)'
+                            boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)'
                           }} />
                           {t(m.titleKey)}
                         </div>
@@ -208,7 +208,7 @@ export function MemoryPanel() {
                     style={{
                       flex: 1, padding: '6px 8px 4px',
                       background: 'var(--cth-paper-100)', border: 'none',
-                      boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                      boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                       fontFamily: 'var(--cth-font-ui)', fontSize: 13,
                       color: 'var(--cth-ink-900)', outline: 'none'
                     }}
@@ -221,7 +221,7 @@ export function MemoryPanel() {
                   <pre style={{
                     margin: 0, maxHeight: '40vh', overflow: 'auto',
                     background: 'var(--cth-cream-100)',
-                    boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                    boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                     padding: 8, fontFamily: 'var(--cth-font-mono)', fontSize: 12,
                     whiteSpace: 'pre-wrap', color: 'var(--cth-ink-900)'
                   }} dir={rtl ? 'auto' : undefined}>{result}</pre>

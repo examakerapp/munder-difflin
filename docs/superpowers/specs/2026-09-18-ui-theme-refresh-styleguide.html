@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Munder Difflin — UI theme refresh style guide (v3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  /* ============ PROPOSED tokens (new values) ============ */
+  :root{
+    --cth-cream-50:  #FAFAF9; --cth-cream-100: #F4F3EF; --cth-cream-200: #E9E7E0; --cth-cream-300: #D8D5CB;
+    --cth-paper-100: #FFFFFF; --cth-paper-200: #F5F4F0;
+    --cth-ink-900:#1A1320; --cth-ink-700:#3D2E4A; --cth-ink-500:#6B5878; --cth-ink-300:#A899B5; --cth-ink-100:#D9CFE0;
+    --cth-coral:#D96A62; --cth-mint:#5CA97A; --cth-sky:#4F9FAF; --cth-lemon:#DCAB3C; --cth-lilac:#9482D3; --cth-peach:#D99168;
+    --cth-status-idle:#A199AB; --cth-status-thinking:#4F9FAF; --cth-status-working:#DCAB3C; --cth-status-blocked:#D96A62; --cth-status-success:#5CA97A;
+    --cth-primary: #4F68E8; --cth-primary-soft: #E5E9FC;
+    --cth-font-display: "Press Start 2P", monospace;
+    --cth-space-3:12px; --cth-space-4:16px;
+    --cth-radius-sm:6px; --cth-radius-md:10px; --cth-radius-lg:16px; --cth-radius-pill:999px;
+    --cth-shadow-hard: 3px 3px 0 rgba(26,19,32,.16);
+    --cth-panel-border: inset 0 0 0 1px var(--cth-ink-300);
+    --cth-panel-border-inset: inset 0 0 0 1px var(--cth-ink-100);
+    --cth-panel-border-dialog: inset 0 0 0 1px var(--cth-ink-500);
+    --noise: rgba(120,118,110,.035);
+  }
+  :root[data-theme='dark']{
+    --cth-cream-50:#17171B; --cth-cream-100:#1D1D22; --cth-cream-200:#26262C; --cth-cream-300:#313139;
+    --cth-paper-100:#1A1A1F; --cth-paper-200:#222229;
+    --cth-ink-900:#DEDBD6; --cth-ink-700:#B3B0AC; --cth-ink-500:#96919F; --cth-ink-300:#787684; --cth-ink-100:#3E3D46;
+    --cth-coral:#E08C82; --cth-mint:#74C096; --cth-sky:#6FB3C4; --cth-lemon:#CFAA57; --cth-lilac:#A896E3; --cth-peach:#DFA57F;
+    --cth-primary:#7B93F5; --cth-primary-soft:#232A4A;
+    --cth-shadow-hard: 3px 3px 0 rgba(0,0,0,.5);
+    --noise: rgba(255,255,255,.03);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cth-cream-100);color:var(--cth-ink-900);
+       font-family:"Inter",-apple-system,"Segoe UI",system-ui,sans-serif;
+       background-image:repeating-linear-gradient(45deg, var(--noise) 0 1px, transparent 1px 6px);}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 100px}
+  svg{display:block}
+  .icon{width:14px;height:14px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+  .top{position:sticky;top:0;z-index:5;background:var(--cth-cream-100);border-bottom:1px solid var(--cth-cream-300);
+       padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+  .top h1{margin:0;font-size:15px;font-weight:700}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--cth-ink-500)}
+  .toggle button{border:1px solid var(--cth-ink-300);background:var(--cth-paper-100);color:var(--cth-ink-900);
+                  border-radius:var(--cth-radius-pill);padding:6px 14px;font-size:12.5px;cursor:pointer}
+  .toggle button.active{background:var(--cth-ink-900);color:var(--cth-cream-100);border-color:var(--cth-ink-900)}
+
+  section{margin-top:48px}
+  section h2{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--cth-ink-500);
+             margin:0 0 6px;padding-bottom:8px;border-bottom:1px solid var(--cth-cream-300)}
+  section p.note{font-size:13px;color:var(--cth-ink-500);margin:8px 0 18px;max-width:70ch;line-height:1.6}
+  section p.change{font-size:12px;color:var(--cth-primary);margin:0 0 14px;font-weight:600}
+
+  .swatch-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  .swatch{border-radius:var(--cth-radius-md);overflow:hidden;box-shadow:var(--cth-panel-border)}
+  .swatch .fill{height:52px}
+  .swatch .meta{padding:8px 10px;background:var(--cth-paper-100)}
+  .swatch .name{font-size:11px;font-weight:700}
+  .swatch .old{font-size:10.5px;color:var(--cth-ink-500);text-decoration:line-through}
+  .swatch .new{font-size:10.5px;color:var(--cth-ink-900);font-weight:600}
+
+  .radius-row,.shadow-row,.space-row{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap}
+  .rbox{width:90px;height:90px;background:var(--cth-paper-100);box-shadow:var(--cth-panel-border);
+        display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;font-size:11px;color:var(--cth-ink-500)}
+  .sbox{width:160px;height:90px;background:var(--cth-paper-100);border-radius:var(--cth-radius-md);
+        display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;font-size:11px;color:var(--cth-ink-500)}
+  .sbox.old{box-shadow:3px 3px 0 rgba(26,19,32,.14);border-radius:0}
+  :root[data-theme='dark'] .sbox.old{box-shadow:4px 4px 0 rgba(0,0,0,.45)}
+  /* Shadow-only demo: no panel-border token here on purpose, so this is a fair
+     like-for-like comparison against .sbox.old (which also has no border) — the
+     real bordered comparison lives in section 05's panel examples. */
+  .sbox.new{box-shadow:var(--cth-shadow-hard)}
+
+  .space-ruler{display:flex;align-items:flex-end;gap:10px}
+  .sp{background:var(--cth-sky);opacity:.5}
+  .sp-label{font-size:10.5px;color:var(--cth-ink-500);text-align:center;margin-top:4px}
+
+  /* ---- PixelPanel v3: header clipped by the panel's own overflow, never
+     independently rounded — this is the fix for the v2 corner-seam glitch.
+     One rounded shape (the panel), the header is a plain rectangle that
+     inherits it via clipping instead of trying to match it with a second,
+     independently-computed border-radius. ---- */
+  .panel{position:relative;padding:var(--cth-space-4);border-radius:var(--cth-radius-md);
+         background:var(--cth-cream-100);box-shadow:var(--cth-panel-border), var(--cth-shadow-hard);
+         overflow:hidden}
+  .panel.inset{background:var(--cth-cream-200);box-shadow:var(--cth-panel-border-inset);border-radius:var(--cth-radius-sm)}
+  .panel.dialog{background:var(--cth-cream-50);box-shadow:var(--cth-panel-border-dialog), 3px 3px 0 rgba(26,19,32,.2);border-radius:var(--cth-radius-lg)}
+  :root[data-theme='dark'] .panel.dialog{box-shadow:var(--cth-panel-border-dialog), 3px 3px 0 rgba(0,0,0,.55)}
+  .panel.terminal{background:var(--cth-paper-100)}
+  .panel.old{border-radius:0;box-shadow:var(--cth-panel-border);padding:var(--cth-space-3);background:var(--cth-cream-100)}
+
+  /* No border-radius here on purpose — the parent's overflow:hidden clips this
+     rectangle to whatever radius that variant's panel declares, so the two
+     corners are geometrically the same curve, not two curves that must be
+     kept in sync by hand. Fill restored to cream-200 (same contrast the old
+     version had against a cream-100/paper body) — v2's paper-200 was too
+     close to the body fill to read as an intentional two-tone header. */
+  /* v4 fix: header matches its own panel's fill exactly (found live in the
+     app — the onboarding wizard's dialog header used cream-200 on a cream-50
+     body, and that faint near-match gray read as a rendering glitch, not a
+     header). The divider line + status dot now carry the whole "this is a
+     header" signal instead of a color block. */
+  .ptitle{display:flex;align-items:center;gap:7px;margin:calc(var(--cth-space-4) * -1) calc(var(--cth-space-4) * -1) 12px;
+          padding:9px 14px;color:var(--cth-ink-900);font-size:11.5px;font-weight:700;letter-spacing:.02em;
+          box-shadow:inset 0 -1px 0 var(--cth-ink-300);background:var(--cth-cream-100)}
+  .panel.inset .ptitle{background:var(--cth-cream-200)}
+  .panel.dialog .ptitle{background:var(--cth-cream-50)}
+  .ptitle .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .panel.old .ptitle{margin:-12px -12px 12px;background:var(--cth-cream-200);
+                      box-shadow:inset 0 -1px 0 var(--cth-ink-900);padding:6px 12px 4px}
+  .panel.old .ptitle .dot{display:none}
+
+  /* active variant — a thin accent ring, not a thick pastel halo. The hard
+     offset shadow is the bold move in this system; the ring's job is just to
+     say "this one" without competing with it for attention. A subtle tint on
+     the fill itself (not just an outline) reads as "selected" the way the
+     tint alone already does in .app-nav-item.active, so the two states use
+     the same underlying idea. */
+  .panel.active{background:color-mix(in srgb, var(--accent, var(--cth-primary)) 5%, var(--cth-cream-100));
+      box-shadow:
+      inset 0 0 0 1px var(--cth-ink-100),
+      0 0 0 1.5px var(--accent, var(--cth-primary)),
+      var(--cth-shadow-hard)}
+  .panel.active .ptitle{background:var(--accent-soft, var(--cth-primary-soft));color:var(--accent, var(--cth-primary))}
+  .panel.active .ptitle .dot{background:var(--accent, var(--cth-primary))}
+
+  .panel p{margin:0;font-size:12.5px;color:var(--cth-ink-500)}
+  .panels{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+
+  .btn-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .pill{border-radius:var(--cth-radius-pill);border:1px solid var(--cth-ink-300);background:var(--cth-paper-100);
+        color:var(--cth-ink-900);font-size:13px;font-weight:600;padding:9px 16px;cursor:pointer}
+  .pill.solid{background:var(--cth-primary);color:#fff;border:none}
+  .hover-old{border-radius:6px;border:none;background:var(--cth-paper-100);box-shadow:var(--cth-panel-border);
+             padding:9px 14px;font-size:13px;font-weight:600;color:var(--cth-ink-900);cursor:pointer;
+             transition:background 80ms steps(2), box-shadow 80ms steps(2), transform 80ms steps(2)}
+  .hover-old:hover{background:var(--cth-lemon);box-shadow:inset 0 0 0 1px var(--cth-ink-300), 3px 3px 0 0 var(--cth-ink-900);
+                   transform:translate(-1.5px,-1.5px)}
+  .hover-new{border-radius:var(--cth-radius-sm);border:none;background:var(--cth-paper-100);box-shadow:var(--cth-panel-border);
+             padding:9px 14px;font-size:13px;font-weight:600;color:var(--cth-ink-900);cursor:pointer;
+             transition:background 80ms steps(2), box-shadow 80ms steps(2), transform 80ms steps(2)}
+  .hover-new:hover{background:var(--cth-primary);color:#fff;box-shadow:inset 0 0 0 1px var(--cth-ink-300), 3px 3px 0 0 var(--cth-ink-900);
+                   transform:translate(-1.5px,-1.5px)}
+  /* The existing app sets a real focus-visible ring app-wide (global.css) —
+     keyboard-only, ink-colored, offset outside the control. That's untouched
+     by this pass; shown here so a redesign doesn't silently drop it. */
+  .hover-new:focus-visible{outline:1px solid var(--cth-ink-300);outline-offset:2px}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 11px;
+        border-radius:var(--cth-radius-pill)}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .caption{font-size:11px;color:var(--cth-ink-500);margin-top:8px;text-align:center}
+
+  /* ================= Section 08: full application page preview ================= */
+  .app-frame{border-radius:var(--cth-radius-lg);overflow:hidden;box-shadow:var(--cth-panel-border-dialog), 3px 3px 0 rgba(26,19,32,.2)}
+  :root[data-theme='dark'] .app-frame{box-shadow:var(--cth-panel-border-dialog), 3px 3px 0 rgba(0,0,0,.55)}
+  .app{display:flex;height:640px;background:var(--cth-cream-100)}
+  .app-sidebar{width:230px;flex-shrink:0;background:var(--cth-paper-100);box-shadow:inset -1px 0 0 var(--cth-ink-100);
+               padding:var(--cth-space-4);display:flex;flex-direction:column;gap:16px}
+  /* Brand wordmark keeps the app's existing display face — the one place in
+     this redesign that stays loud and pixel-y on purpose. Everything else in
+     the app moved to a quieter, modern voice; the logo is where personality
+     is safe to keep, the same way a hand-drawn logotype survives inside an
+     otherwise clean-sans brand system. */
+  .app-brand{display:flex;align-items:center;gap:9px;font-family:var(--cth-font-display);
+             font-size:9px;line-height:1.5;letter-spacing:.01em}
+  .app-brand .mark{width:24px;height:24px;border-radius:var(--cth-radius-sm);background:var(--cth-ink-900);color:var(--cth-cream-100);
+                    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .app-section-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--cth-ink-500);margin:6px 0 2px}
+  .app-nav-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--cth-radius-sm);font-size:12.5px;color:var(--cth-ink-500)}
+  .app-nav-item.active{background:var(--cth-primary-soft);color:var(--cth-primary);font-weight:700}
+  .app-agent{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:var(--cth-radius-sm);font-size:12.5px;color:var(--cth-ink-700)}
+  .app-agent .av{width:22px;height:22px;border-radius:var(--cth-radius-sm);color:#fff;font-size:9.5px;font-weight:700;
+                  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .app-agent{justify-content:space-between}
+  .app-agent .name{display:flex;align-items:center;gap:8px}
+  .app-main{flex-grow:1;padding:var(--cth-space-4);display:flex;flex-direction:column;gap:16px;overflow:auto}
+  .app-topbar{display:flex;align-items:center;justify-content:space-between}
+  .app-topbar h2{margin:0;font-size:16px}
+  .app-cols{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;flex-grow:1}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>UI theme refresh — style guide v2 (refined per feedback)</h1>
+  <div class="toggle">
+    Theme:
+    <button id="btnLight" class="active" onclick="setTheme('light')">Light</button>
+    <button id="btnDark" onclick="setTheme('dark')">Dark</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section>
+    <h2>00 — Design critique (self-review pass)</h2>
+    <p class="note">
+      <b>Typography was the biggest gap</b> — every other lever moved (color, radius, shadow, spacing) but type never did.
+      Fixed by giving the brand wordmark the app's existing display face (§08's sidebar), the one place personality is safe
+      to keep on purpose while everything functional gets quieter. Everything else stays on the app's existing Inter/JetBrains
+      Mono pairing — untouched, not overlooked.<br><br>
+      <b>Soft glow vs. hard shadow was an unresolved tension</b> in the first "active" panel: a thick pastel ring next to a
+      bold graphic offset shadow is two different design languages fighting for attention. Fixed by thinning the ring to
+      1.5px and letting the hard shadow stay the dominant, confident move — the ring's job is just to say "this one," not
+      to compete.<br><br>
+      <b>Chips were speculative</b> until wired into §08's agent roster (status, replacing a bare dot) — a pattern doesn't
+      belong in a shipped system until it's proven useful somewhere real.<br><br>
+      <b>The new primary accent was too close to the existing `lilac` agent-identity hue</b>, especially in dark mode —
+      caught by checking it against the existing six accents rather than in isolation, and pulled further toward blue for
+      real separation.<br><br>
+      <b>Not resolved here, flagged for a real decision:</b> whether the 2D floor's <i>frame</i> (not the tileset or
+      characters — those stay untouched) should get the same rounded/grounded treatment as the rest of the UI. See the
+      chat discussion; not yet scoped into this spec.
+    </p>
+  </section>
+
+  <section>
+    <h2>01 — Base surface palette</h2>
+    <p class="note">Unchanged from v1. Ink ramp, six accent hues, and status colors stay as they are today.</p>
+    <div class="swatch-row" id="swatches"></div>
+  </section>
+
+  <section>
+    <h2>02 — Border radius</h2>
+    <p class="note">Unchanged from v1 — one standard scale, applied everywhere so rounding stays consistent instead of ad hoc.</p>
+    <div class="radius-row">
+      <div class="rbox" style="border-radius:0">0<br>(today)</div>
+      <div class="rbox" style="border-radius:var(--cth-radius-sm)">6px<br>sm — chips, inset</div>
+      <div class="rbox" style="border-radius:var(--cth-radius-md)">10px<br>md — default panels</div>
+      <div class="rbox" style="border-radius:var(--cth-radius-lg)">16px<br>lg — dialogs</div>
+      <div class="rbox" style="border-radius:var(--cth-radius-pill)">999<br>pill — buttons</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>03 — Shadow: revised per feedback</h2>
+    <p class="change">Changed: keeps the hard offset (no blur) and the same 3px distance — only the corners round.</p>
+    <div class="shadow-row">
+      <div><div class="sbox old">Today</div><div class="caption">3px 3px 0, square corners</div></div>
+      <div><div class="sbox new">Proposed</div><div class="caption">3px 3px 0, rounded corners</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>04 — Spacing</h2>
+    <p class="note">Unchanged from v1 — one step up the existing scale, nothing invented: panel padding 12px → 16px.</p>
+    <div class="space-ruler">
+      <div><div class="sp" style="width:24px;height:12px"></div><div class="sp-label">12 (old)</div></div>
+      <div><div class="sp" style="width:24px;height:16px"></div><div class="sp-label">16 (new)</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>05 — PixelPanel variants: redesigned</h2>
+    <p class="change" style="color:#B03F33">Fixed live, found in the running app: the dialog header (cream-200) on a
+    near-white dialog body (cream-50) read as a smudge/glitch, not a header — too close to match, too different to
+    ignore. The header now always matches its own panel's fill exactly; the divider + dot carry the "this is a
+    header" signal instead of a color block.</p>
+    <p class="change">Changed: title strip is now a quiet header row with a small status dot instead of a heavy painted block; "active" is a soft accent glow ring instead of a thick 3-layer painted border — reads as "selected," not "boxed in." Fixed: v2 had a corner-seam glitch on inset/dialog panels because the header rounded its own corners independently of the panel — two separately-computed curves that don't perfectly align. Fixed by giving the panel `overflow:hidden` as the single source of the rounded shape; the header is now a plain rectangle clipped to it, and its fill is back to `cream-200` (matching the old version's contrast) instead of v2's too-similar `paper-200`.</p>
+    <div class="grid-2">
+      <div>
+        <div class="panel old"><div class="ptitle">Command Centre</div><p>Old: square corners, heavy painted title bar, flat hairline only.</p></div>
+        <div class="caption">Before</div>
+      </div>
+      <div>
+        <div class="panel"><div class="ptitle"><span class="dot" style="background:var(--cth-ink-300)"></span>Command Centre</div><p>New: rounded, quiet header row, hard-offset shadow with rounded corners.</p></div>
+        <div class="caption">After — variant "default"</div>
+      </div>
+    </div>
+    <div class="panels" style="margin-top:16px">
+      <div class="panel inset"><div class="ptitle"><span class="dot" style="background:var(--cth-ink-300)"></span>Inset</div><p>Nested surfaces, e.g. inside a dialog.</p></div>
+      <div class="panel active" style="--accent:var(--cth-mint); --accent-soft:color-mix(in srgb, var(--cth-mint) 20%, var(--cth-paper-100))">
+        <div class="ptitle"><span class="dot"></span>Pam — active</div><p>Accent glow ring replaces the old triple-border paint.</p>
+      </div>
+      <div class="panel dialog"><div class="ptitle"><span class="dot" style="background:var(--cth-ink-500)"></span>Confirm</div><p>Dialogs: largest radius, strongest border, biggest offset.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>06 — Buttons &amp; hover</h2>
+    <p class="change">Changed: kept the exact old hover mechanic (fill + hard offset + 1px lift) — only recolored, from lemon to a new dedicated <code>--cth-primary</code>. Started from the "Share" button in your dev-tool toolbar reference, then pulled toward blue and away from violet after checking it against the existing <code>--cth-lilac</code> agent hue — the two were too close, especially in dark mode. Final: <code>#4F68E8</code> light / <code>#7B93F5</code> dark, distinct from every agent/status color.</p>
+    <div class="btn-row">
+      <button class="pill">Ghost pill</button>
+      <button class="pill solid">Solid pill (primary)</button>
+      <button class="hover-old">Hover — today (lemon)</button>
+      <button class="hover-new">Hover — proposed (primary blue)</button>
+    </div>
+    <p class="caption" style="text-align:left;margin-top:10px">Tab to the last button to see focus-visible — unchanged from the app's existing keyboard-focus ring, carried forward on purpose.</p>
+  </section>
+
+  <section>
+    <h2>07 — Chips</h2>
+    <p class="note">Used in section 08's agent roster for status, replacing a bare color dot with a labeled chip — a pattern shouldn't ship in a system without appearing somewhere real.</p>
+    <div class="chips">
+      <span class="chip" style="background:color-mix(in srgb, var(--cth-sky) 18%, var(--cth-paper-100)); color:var(--cth-sky)">Working</span>
+      <span class="chip" style="background:color-mix(in srgb, var(--cth-mint) 18%, var(--cth-paper-100)); color:var(--cth-mint)">Done</span>
+      <span class="chip" style="background:color-mix(in srgb, var(--cth-primary) 15%, var(--cth-paper-100)); color:var(--cth-primary)">Primary</span>
+      <span class="chip" style="background:color-mix(in srgb, var(--cth-coral) 18%, var(--cth-paper-100)); color:var(--cth-coral)">Blocked</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>08 — Applied: one full app page, in context</h2>
+    <p class="note">Command Centre, composed from everything above — rounded panels, the new spacing, the redesigned title rows, the primary-blue accent on the active nav item, and an accent-glow "active" panel for the currently-working agent. This is illustrative layout, not the app's real component markup.</p>
+    <div class="app-frame">
+      <div class="app">
+        <div class="app-sidebar">
+          <div class="app-brand"><span class="mark">
+            <svg viewBox="0 0 24 24" class="icon" style="stroke:currentColor;width:12px;height:12px"><path d="M4 20V8l8-4 8 4v12"/><path d="M9 20v-6h6v6"/></svg>
+          </span><span>MUNDER<br>DIFFLIN</span></div>
+          <div>
+            <div class="app-section-label">Workspace</div>
+            <div class="app-nav-item active">Command Centre</div>
+            <div class="app-nav-item">Agent Threads</div>
+            <div class="app-nav-item">Automations</div>
+          </div>
+          <div>
+            <div class="app-section-label">On the floor</div>
+            <div class="app-agent"><span class="name"><span class="av" style="background:var(--cth-primary)">M</span>Michael</span>
+              <span class="chip" style="background:color-mix(in srgb, var(--cth-status-working) 20%, var(--cth-paper-100)); color:var(--cth-status-working)">Working</span></div>
+            <div class="app-agent"><span class="name"><span class="av" style="background:var(--cth-mint)">P</span>Pam</span>
+              <span class="chip" style="background:color-mix(in srgb, var(--cth-status-working) 20%, var(--cth-paper-100)); color:var(--cth-status-working)">Working</span></div>
+            <div class="app-agent"><span class="name"><span class="av" style="background:var(--cth-coral)">D</span>Dwight</span>
+              <span class="chip" style="background:color-mix(in srgb, var(--cth-status-blocked) 18%, var(--cth-paper-100)); color:var(--cth-status-blocked)">Blocked</span></div>
+            <div class="app-agent"><span class="name"><span class="av" style="background:var(--cth-ink-300)">A</span>Angela</span>
+              <span class="chip" style="background:var(--cth-cream-200); color:var(--cth-ink-500)">Idle</span></div>
+          </div>
+        </div>
+        <div class="app-main">
+          <div class="app-topbar">
+            <h2>Command Centre</h2>
+            <button class="pill solid">+ New task</button>
+          </div>
+          <div class="app-cols">
+            <div class="panel active" style="--accent:var(--cth-mint); --accent-soft:color-mix(in srgb, var(--cth-mint) 20%, var(--cth-paper-100)); display:flex; flex-direction:column;">
+              <div class="ptitle"><span class="dot"></span>Pam — Working</div>
+              <p style="flex-grow:1">Terminal / task output would render here. The active glow marks Pam as the agent currently doing work, without boxing the panel in a heavy painted border.</p>
+            </div>
+            <div class="panel"><div class="ptitle"><span class="dot" style="background:var(--cth-ink-300)"></span>Recent Activity</div>
+              <p>Release checklist drafted · PR #212 reviewed · Changelog summarised · Migration blocked on schema review.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('btnLight').classList.toggle('active', t==='light');
+    document.getElementById('btnDark').classList.toggle('active', t==='dark');
+  }
+  var pairs = [
+    ['--cth-cream-50','#FFFDF5'], ['--cth-cream-100','#FFF8E7'], ['--cth-cream-200','#F4E9C7'],
+    ['--cth-cream-300','#E8D9A0'], ['--cth-paper-100','#FCFAF0'], ['--cth-paper-200','#F0EAD2'],
+    ['--cth-primary','(new token)'], ['--cth-lilac','#9482D3 (unchanged — compare hue to primary)']
+  ];
+  var row = document.getElementById('swatches');
+  var cs = getComputedStyle(document.documentElement);
+  pairs.forEach(function(p){
+    var name = p[0], oldVal = p[1];
+    var newVal = cs.getPropertyValue(name).trim();
+    var el = document.createElement('div');
+    el.className = 'swatch';
+    el.innerHTML = '<div class="fill" style="background:var(' + name + ')"></div>' +
+                   '<div class="meta"><div class="name">' + name + '</div>' +
+                   '<div class="old">old ' + oldVal + '</div>' +
+                   '<div class="new">new ' + newVal + '</div></div>';
+    row.appendChild(el);
+  });
+</script>
+
+</body>
+</html>

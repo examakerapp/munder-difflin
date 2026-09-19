@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PixelPanel } from './PixelPanel';
 import { PixelBadge } from './PixelBadge';
 import { PixelButton } from './PixelButton';
 import { SpritePortrait } from './SpritePortrait';
@@ -124,16 +123,17 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
   };
 
   return (
-    <PixelPanel
-      variant="default"
+    // v0.6.0: flush against the background, matching CommandCenterPanel — see
+    // that file for the reasoning ("not inside a card... directly on the
+    // background, end to end").
+    <div
       style={{
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        padding: 0,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        background: 'var(--cth-cream-100)'
       }}
-      noPadding
     >
       {/* Thin header strip */}
       <div ref={headerRef} style={{
@@ -146,7 +146,7 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
         <div style={{
           width: 32, height: 32,
           background: `var(--cth-${agent.accent}-light)`,
-          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden',
           flexShrink: 0
         }}>
@@ -289,7 +289,7 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
       {editOpen && (
         <EditAgentModal agent={agent} onClose={() => setEditOpen(false)} />
       )}
-    </PixelPanel>
+    </div>
   );
 }
 
@@ -302,7 +302,7 @@ function EmptyTab({ title, children }: { title: string; children: React.ReactNod
       background: 'var(--cth-paper-200)'
     }}>
       <div style={{
-        fontFamily: 'var(--cth-font-display)', fontSize: 10, lineHeight: '14px',
+        fontFamily: 'var(--cth-font-display)', fontSize: 13, lineHeight: '14px',
         color: 'var(--cth-ink-500)'
       }}>{title.toUpperCase()}</div>
       <p style={{

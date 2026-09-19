@@ -20,7 +20,7 @@ import {
 export const inputStyle: CSSProperties = {
   width: '100%', boxSizing: 'border-box', padding: '6px 8px',
   background: 'var(--cth-paper-100)', border: 'none',
-  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   fontFamily: 'var(--cth-font-ui)', fontSize: 12, lineHeight: '17px',
   color: 'var(--cth-ink-900)', outline: 'none'
 };
@@ -37,7 +37,7 @@ export const textareaStyle: CSSProperties = {
 
 export const selectStyle: CSSProperties = {
   padding: '3px 6px', background: 'var(--cth-paper-100)', border: 'none',
-  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   fontFamily: 'var(--cth-font-ui)', fontSize: 12, color: 'var(--cth-ink-900)',
   cursor: 'pointer', minWidth: 0, maxWidth: '100%'
 };
@@ -60,8 +60,8 @@ export function Chip({ children, tone = 'plain' }: { children: ReactNode; tone?:
   return (
     <span style={{
       flexShrink: 0, padding: '2px 5px 1px',
-      fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
-      background: bg, boxShadow: `inset 0 0 0 1px ${line}`, color: 'var(--cth-ink-900)'
+      fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '12px',
+      background: bg, boxShadow: `inset 0 0 0 1px ${line}, 2px 2px 0 0 ${line}`, color: 'var(--cth-ink-900)'
     }}>{children}</span>
   );
 }
@@ -73,7 +73,7 @@ export function Callout({ children, tone = 'warn' }: { children: ReactNode; tone
       marginTop: 6, padding: '6px 8px',
       fontSize: 11, lineHeight: '15px', color: 'var(--cth-ink-900)',
       background: warn ? 'var(--cth-coral-light)' : 'var(--cth-cream-200)',
-      boxShadow: `inset 0 0 0 1px ${warn ? 'var(--cth-coral)' : 'var(--cth-ink-100)'}`
+      boxShadow: `inset 0 0 0 1px ${warn ? 'var(--cth-coral)' : 'var(--cth-ink-100)'}, 2px 2px 0 0 ${warn ? 'var(--cth-coral)' : 'var(--cth-ink-100)'}`
     }}>{children}</div>
   );
 }
@@ -90,7 +90,7 @@ export function Toggle({ on, onClick, onLabel, offLabel }: {
       style={{
         padding: '2px 8px 1px', border: 'none', cursor: 'pointer', flexShrink: 0,
         background: on ? 'var(--cth-lemon)' : 'var(--cth-cream-200)',
-        boxShadow: `inset 0 0 0 1px ${on ? 'var(--cth-ink-900)' : 'var(--cth-ink-700)'}`,
+        boxShadow: `inset 0 0 0 1px ${on ? 'var(--cth-ink-900)' : 'var(--cth-ink-700)'}, 2px 2px 0 0 ${on ? 'var(--cth-ink-900)' : 'var(--cth-ink-700)'}`,
         fontFamily: 'var(--cth-font-ui)', fontSize: 12, color: 'var(--cth-ink-900)'
       }}
     >{on ? (onLabel ?? t('common.on')) : (offLabel ?? t('common.off'))}</button>
@@ -108,7 +108,7 @@ export function MiniButton({ children, onClick, tone = 'plain', disabled }: {
         flexShrink: 0, padding: '2px 7px 1px', border: 'none',
         cursor: disabled ? 'default' : 'pointer',
         background: tone === 'good' ? 'var(--cth-mint)' : 'var(--cth-cream-200)',
-        boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+        boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
         fontFamily: 'var(--cth-font-ui)', fontSize: 11,
         color: disabled ? 'var(--cth-ink-300)' : tone === 'danger' ? 'var(--cth-coral)' : 'var(--cth-ink-900)'
       }}
@@ -134,7 +134,7 @@ export function Field({ label, children }: { label: string; children: ReactNode 
   return (
     <div style={{ marginTop: 8 }}>
       <div style={{
-        fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
+        fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '12px',
         color: 'var(--cth-ink-500)', marginBottom: 4
       }}>{label}</div>
       {children}
@@ -167,13 +167,13 @@ export function TriggerCard({ title, blurb, summary, defaultOpen = false, childr
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div style={{ marginBottom: 8, background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)' }}>
+    <div style={{ marginBottom: 8, background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)' }}>
       <button
         onClick={() => setOpen((o) => !o)}
         style={{
           width: '100%', display: 'flex', alignItems: 'flex-start', gap: 6, textAlign: 'left',
           padding: '8px 10px', border: 'none', cursor: 'pointer',
-          background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)'
+          background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)'
         }}
       >
         <span style={{ flexShrink: 0, width: 8, fontSize: 11, lineHeight: '13px', color: 'var(--cth-ink-500)' }}>
@@ -181,7 +181,7 @@ export function TriggerCard({ title, blurb, summary, defaultOpen = false, childr
         </span>
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{
-            display: 'block', fontFamily: 'var(--cth-font-display)', fontSize: 9, lineHeight: '13px',
+            display: 'block', fontFamily: 'var(--cth-font-display)', fontSize: 12, lineHeight: '13px',
             color: 'var(--cth-ink-900)'
           }}>{title}</span>
           <span style={{ display: 'block', fontFamily: 'var(--cth-font-ui)', fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)', marginTop: 2 }}>
@@ -200,7 +200,7 @@ export function SubCard({ children }: { children: ReactNode }) {
   return (
     <div style={{
       marginBottom: 6, padding: '8px 10px 10px',
-      background: 'var(--cth-cream-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)'
+      background: 'var(--cth-cream-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)'
     }}>{children}</div>
   );
 }
@@ -355,7 +355,7 @@ export function PctField({ value, onChange }: { value: number; onChange: (pct: n
       <span style={{ fontSize: 11, color: 'var(--cth-ink-500)' }}>%</span>
       <div style={{
         flex: 1, minWidth: 40, height: 8,
-        background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)'
+        background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)'
       }}>
         <div style={{ width: `${pct}%`, height: '100%', background: pct === 0 ? 'var(--cth-ink-300)' : 'var(--cth-lemon)' }} />
       </div>
@@ -446,8 +446,8 @@ export function WeeklyPicker({ value, onChange }: {
                 width: 26, height: 24, border: 'none', cursor: 'pointer',
                 background: on ? 'var(--cth-mint)' : 'var(--cth-cream-200)',
                 boxShadow: on
-                  ? 'inset 0 0 0 1.5px var(--cth-ink-500)'
-                  : 'inset 0 0 0 1px var(--cth-ink-100)',
+                  ? 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)'
+                  : 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                 fontFamily: 'var(--cth-font-ui)', fontSize: 11,
                 color: on ? 'var(--cth-ink-900)' : 'var(--cth-ink-500)'
               }}
@@ -496,7 +496,7 @@ export function SchedulePicker({ intervalMs, weekly, onInterval, onWeekly }: {
   const tab = (active: boolean): CSSProperties => ({
     padding: '3px 10px 2px', border: 'none', cursor: 'pointer',
     background: active ? 'var(--cth-cream-100)' : 'transparent',
-    boxShadow: active ? 'inset 0 0 0 1.5px var(--cth-ink-500)' : 'inset 0 0 0 1px var(--cth-ink-100)',
+    boxShadow: active ? 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)' : 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
     fontFamily: 'var(--cth-font-ui)', fontSize: 11,
     color: active ? 'var(--cth-ink-900)' : 'var(--cth-ink-500)'
   });

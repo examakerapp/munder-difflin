@@ -35,3 +35,9 @@ docs/blog-preview-*/
 # Finder duplicate files, e.g. "spec 2.js", "sitemap 2.xml"
 *\ 2.*
 *\ [0-9].*
+
+# personal Claude Code permission overrides — not shared with the team
+.claude/settings.local.json
+
+# local Pro-theme reference screenshots — not for commit/push per direct request
+PRO workspace screenshots/

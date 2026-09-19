@@ -156,6 +156,20 @@ export const OFFICE_THEME: ThemeConfig = {
     'desk-chief-architect', 'desk-product-manager', 'desk-team-lead',
     'desk-backend-engineer', 'desk-ui-ux-expert', 'desk-data-engineer',
     'desk-project-manager', 'desk-market-researcher', 'desk-agent-organizer',
+    // v0.5.x: clean rebuild (tools/rebuild-office-map.mjs) — Conference Room
+    // + Podcast Room (top-right, built around the same oval table as the
+    // original boardroom), a corridor, then a two-block open floor with a
+    // café corner and a chill-out lounge. Replaces four earlier incremental
+    // passes that had drifted into real bugs (misaligned table layers,
+    // furniture overlapping walls, orphaned desk fragments).
+    'pc-7', 'pc-8', 'pc-9', 'pc-10', 'pc-11', 'pc-12', 'pc-13', 'pc-14', 'pc-15', 'pc-16', 'pc-17', 'pc-18', 'pc-19', 'pc-20', 'pc-21', 'pc-22', 'pc-23', 'pc-24', 'pc-25', 'pc-26', 'pc-27', 'pc-28', 'pc-29', 'pc-30', 'pc-31', 'pc-32', 'pc-33', 'pc-34', 'pc-35', 'pc-36', 'pc-37', 'pc-38', 'pc-39', 'pc-40', 'pc-41', 'pc-42', 'pc-43', 'pc-44', 'pc-45', 'pc-46', 'pc-47', 'pc-48', 'pc-49', 'pc-50', 'pc-51', 'pc-52', 'pc-53', 'pc-54', 'pc-55', 'pc-56', 'pc-57', 'pc-58', 'pc-59', 'pc-60', 'pc-61', 'pc-62', 'pc-63', 'pc-64', 'pc-65', 'pc-66', 'pc-67', 'pc-68', 'pc-69', 'pc-70', 'pc-71', 'pc-72', 'pc-73', 'pc-74', 'pc-75', 'pc-76', 'pc-77', 'pc-78', 'pc-79', 'pc-80', 'pc-81', 'pc-82', 'pc-83', 'pc-84', 'pc-85', 'pc-86', 'pc-87', 'pc-88', 'pc-89', 'pc-90', 'pc-91', 'pc-92', 'pc-93', 'pc-94', 'pc-95', 'pc-96', 'pc-97', 'pc-98', 'pc-99', 'pc-100', 'pc-101', 'pc-102', 'pc-103', 'pc-104', 'pc-105', 'pc-106', 'pc-107', 'pc-108', 'pc-109', 'pc-110',
+    // v0.5.x fix pass (tools/fix-office-map-v2.mjs): 3 desks under the
+    // moved-up Conference Room table (pc-111..113), 1 in the corridor
+    // (pc-117), 3 in the Podcast Room (pc-118..120 — pc-114..116 was a
+    // first attempt with overlapping desk footprints, replaced; those
+    // numbers are intentionally not reused).
+    'pc-111', 'pc-112', 'pc-113', 'pc-117', 'pc-118', 'pc-119',
+    // pc-120 removed — Podcast Room reduced from 3 desks to 2.
   ],
   cafeSeatNames: ['cafe-seat-1', 'cafe-seat-2', 'cafe-seat-3', 'cafe-seat-4'],
   cafeStands: [

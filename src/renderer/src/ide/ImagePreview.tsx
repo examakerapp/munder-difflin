@@ -69,7 +69,7 @@ export function ImagePreview({ root, rel, onCopyPath, onViewSource }: ImagePrevi
               style={{
                 ...ideTextBtn,
                 background: fit === v ? 'var(--cth-sky-light)' : 'var(--cth-cream-100)',
-                boxShadow: fit === v ? 'inset 0 0 0 1px var(--cth-ink-500)' : 'inset 0 0 0 1px var(--cth-ink-100)'
+                boxShadow: fit === v ? 'inset 0 0 0 1px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)' : 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)'
               }}
             >{v ? t('imagePreview.fit') : '1:1'}</button>
           ))}

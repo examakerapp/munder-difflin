@@ -21,11 +21,17 @@ export interface SidebarTabsProps {
 export function SidebarTabs({ current, accent, onChange }: SidebarTabsProps) {
   const { t } = useTranslation();
   return (
+    // v0.6.0: rounded pills instead of hard-edged, full-bleed segments with a
+    // bottom underline — matches the Composer tab-bar treatment used in
+    // CommandCenterPanel. Plain UI font replaces the retro pixel display face
+    // (same reasoning PixelPanel titles already follow: a clean, legible
+    // reading here, the pixel face stays a deliberate personality choice
+    // elsewhere).
     <div style={{
       display: 'flex',
-      gap: 0,
+      gap: 4,
+      padding: 6,
       background: 'var(--cth-cream-200)',
-      boxShadow: 'inset 0 -2px 0 var(--cth-ink-900)',
       flexShrink: 0
     }}>
       {TABS.map(tab => {
@@ -36,25 +42,28 @@ export function SidebarTabs({ current, accent, onChange }: SidebarTabsProps) {
             onClick={() => onChange(tab.key)}
             style={{
               flex: 1,
-              height: 36,
+              height: 30,
               padding: '0 10px',
               border: 'none',
               cursor: 'pointer',
-              background: active ? 'var(--cth-cream-100)' : 'transparent',
+              borderRadius: 'var(--cth-radius-pill)',
+              // v0.6.0: brand orange for the active tab, not the agent's own
+              // accent — matches the mockup's single-accent nav treatment.
+              background: active ? 'var(--cth-primary)' : 'var(--cth-cream-100)',
               boxShadow: active
-                ? `inset 0 -3px 0 var(--cth-${accent}), inset 1px 0 0 var(--cth-ink-900), inset -1px 0 0 var(--cth-ink-900)`
-                : 'inset 0 0 0 0',
-              fontFamily: 'var(--cth-font-display)',
-              fontSize: 10,
-              lineHeight: '14px',
-              color: active ? 'var(--cth-ink-900)' : 'var(--cth-ink-500)',
+                ? 'inset 0 0 0 1px var(--cth-ink-300)'
+                : 'inset 0 0 0 1px var(--cth-ink-100)',
+              fontFamily: 'var(--cth-font-ui)',
+              fontSize: 12,
+              fontWeight: 600,
+              color: active ? 'var(--cth-on-primary)' : 'var(--cth-ink-700)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 6
             }}
           >
-            <Icon name={tab.icon} /> {t(tab.labelKey).toUpperCase()}
+            <Icon name={tab.icon} /> {t(tab.labelKey)}
           </button>
         );
       })}

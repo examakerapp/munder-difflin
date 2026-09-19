@@ -36,6 +36,8 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Icon } from '@/components/Icon';
+import { PixelButton } from '@/components/PixelButton';
+import { PixelPanel } from '@/components/PixelPanel';
 import { summarizeReleaseNotes } from '@shared/releaseNotes';
 import { extractDropHtml } from '@shared/releaseDrop';
 import { ReleaseDrop } from '@/components/ReleaseDrop';
@@ -204,29 +206,23 @@ export function UpdateToast() {
   // Freshly updated with nothing authored for this release: nothing to say.
   if (status.state === 'just-updated') return null;
 
-  const buttonStyle: React.CSSProperties = {
-    padding: '3px 10px 1px',
-    background: 'var(--cth-mint-light, #d0f0e0)',
-    boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
-    fontFamily: 'var(--cth-font-ui)', fontSize: 12,
-    color: 'var(--cth-ink-900)', cursor: 'pointer', border: 'none'
-  };
-
   const linkStyle: React.CSSProperties = {
     fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-900)',
     textDecoration: 'underline', cursor: 'pointer'
   };
 
   return (
-    <div style={{
-      position: 'fixed', right: 16, bottom: 16, zIndex: 400,
-      maxWidth: 340,
-      background: 'var(--cth-cream-50)',
-      boxShadow: '0 0 0 2px var(--cth-ink-900), 4px 5px 0 0 rgba(26,19,32,0.25)',
-      padding: '10px 12px',
-      display: 'flex', flexDirection: 'column', gap: 8,
-      fontFamily: 'var(--cth-font-ui)'
-    }}>
+    <PixelPanel
+      variant="dialog"
+      style={{
+        position: 'fixed', right: 16, bottom: 16, zIndex: 400,
+        maxWidth: 340,
+        background: 'var(--cth-cream-50)',
+        padding: '10px 12px',
+        display: 'flex', flexDirection: 'column', gap: 8,
+        fontFamily: 'var(--cth-font-ui)'
+      }}
+    >
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <Icon name="sparkle" />
         <span style={{ fontSize: 13, color: 'var(--cth-ink-900)', fontWeight: 600 }}>
@@ -244,7 +240,7 @@ export function UpdateToast() {
       {notes.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <div style={{
-            fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
+            fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '12px',
             color: 'var(--cth-ink-500)', textTransform: 'uppercase'
           }}>
             What’s new
@@ -284,25 +280,19 @@ export function UpdateToast() {
       )}
 
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button
-          onClick={() => setStatus(null)}
-          style={{ ...buttonStyle, background: 'var(--cth-cream-100)' }}
-        >
+        <PixelButton variant="secondary" size="sm" onClick={() => setStatus(null)}>
           later
-        </button>
+        </PixelButton>
         {status.state === 'downloaded' ? (
-          <button onClick={restart} disabled={busy} style={buttonStyle}>
+          <PixelButton variant="primary" size="sm" onClick={restart} disabled={busy}>
             {busy ? 'restarting…' : 'restart to update'}
-          </button>
+          </PixelButton>
         ) : (
-          <button
-            onClick={openRelease}
-            style={buttonStyle}
-          >
+          <PixelButton variant="primary" size="sm" onClick={openRelease}>
             {hasDownload ? `download ${status.version}` : 'open releases'}
-          </button>
+          </PixelButton>
         )}
       </div>
-    </div>
+    </PixelPanel>
   );
 }

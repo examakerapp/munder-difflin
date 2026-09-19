@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Munder Difflin — PostHog-inspired redesign (proposed)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ============ Sourced from PostHog's open-source repo (frontend/src/styles/lemon-skin.scss,
+       @posthog/quill primitives.css) on 2026-09-18. Radius and the brand accent hue are
+       confirmed values; the exact neutral-cool/posthog-3000 hex steps are NOT published in
+       their dist files, so the base neutral scale below is a grounded approximation (matches
+       their documented token STRUCTURE and the real app's known appearance) rather than a
+       pixel-sampled value — flagged here, not hidden. ============ */
+
+    /* Base — cool neutral, replacing the old warm cream/paper family. APPROXIMATED. */
+    --cth-cream-50:  #F7F7F8; --cth-cream-100: #F2F3F5; --cth-cream-200: #E7E9EC; --cth-cream-300: #D5D8DD;
+    --cth-paper-100: #FFFFFF; --cth-paper-200: #FAFAFB;
+
+    /* Ink — cool near-black instead of the old violet-toned ramp. APPROXIMATED lightness
+       steps, matched to the same relative-contrast levels our current ramp already verified. */
+    --cth-ink-900:#1D1F27; --cth-ink-700:#3C3F4A; --cth-ink-500:#63666F; --cth-ink-300:#9CA0AA; --cth-ink-100:#DDE0E5;
+
+    /* Six agent-identity accents — REPLACED with 6 picks from PostHog's actual published
+       15-color categorical data-viz palette (SOURCED, exact hex from their dist CSS),
+       chosen for max separation and to avoid the brand-orange family. */
+    --cth-coral:#F14F58; --cth-coral-light:#FDE1E2;
+    --cth-mint:#529A0A;  --cth-mint-light:#E3F0D4;
+    --cth-sky:#1D4AFF;   --cth-sky-light:#DDE5FF;
+    --cth-lemon:#E4A604; --cth-lemon-light:#FBEBC7;
+    --cth-lilac:#A56EFF; --cth-lilac-light:#EDE3FF;
+    --cth-peach:#FE729E; --cth-peach-light:#FFE0EA;
+
+    --cth-status-idle:#9CA0AA; --cth-status-thinking:#1D4AFF; --cth-status-working:#E4A604;
+    --cth-status-blocked:#F14F58; --cth-status-success:#529A0A;
+
+    /* Brand primary — "PostHog Orange." SOURCED (oklch(0.65 0.21 37.41) ≈ this hex). */
+    /* Amber Glow — PostHog's actual primary CTA color (sourced, marketing-site
+       extraction), swapped in per direct request over the orange-red I'd
+       pulled from the in-product oklch value. */
+    --cth-primary: #EB9D2A; --cth-primary-soft: #FBEBC7;
+
+    /* Radius — SOURCED exactly from lemon-skin.scss: xs .25rem/sm+md .375rem/lg .625rem.
+       Already almost identical to what this app just adopted independently. */
+    /* Nudged up a step per feedback — still subtle, not "too rounded." */
+    --cth-radius-sm:6px; --cth-radius-md:8px; --cth-radius-lg:12px; --cth-radius-pill:999px;
+    --cth-shadow-hard: 3px 3px 0 rgba(29,31,39,.14);
+    --cth-panel-border: inset 0 0 0 1px var(--cth-ink-300);
+    --cth-panel-border-inset: inset 0 0 0 1px var(--cth-ink-100);
+    --cth-panel-border-dialog: inset 0 0 0 1px var(--cth-ink-500);
+    --noise: rgba(99,102,111,.03);
+  }
+  :root[data-theme='dark']{
+    /* Dark base — APPROXIMATED cool near-black, matching PostHog's documented
+       neutral-cool-950/850/800/600 chain structure. */
+    --cth-cream-50:#14161C; --cth-cream-100:#1A1C23; --cth-cream-200:#23262F; --cth-cream-300:#2E323C;
+    --cth-paper-100:#1C1F27; --cth-paper-200:#20232B;
+    --cth-ink-900:#E4E6EA; --cth-ink-700:#B4B7C0; --cth-ink-500:#93969F; --cth-ink-300:#75798A; --cth-ink-100:#3A3D46;
+
+    --cth-coral:#F0747C; --cth-coral-light:#3A2226;
+    --cth-mint:#74C13A;  --cth-mint-light:#22301A;
+    --cth-sky:#6E8CFF;   --cth-sky-light:#1D2540;
+    --cth-lemon:#F0C255; --cth-lemon-light:#332A16;
+    --cth-lilac:#BD9BFF; --cth-lilac-light:#2A2340;
+    --cth-peach:#FF9BC0; --cth-peach-light:#3A2230;
+
+    /* Brand primary, dark — SOURCED (oklch(0.83 0.16 84.71): lighter, hue shifted toward
+       amber/gold so it doesn't glare on a dark ground — the same reasoning our own dark
+       theme already applies to its accents). */
+    --cth-primary:#F0B24E; --cth-primary-soft:#3A2A16;
+    --cth-shadow-hard: 3px 3px 0 rgba(0,0,0,.5);
+    --noise: rgba(255,255,255,.025);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cth-cream-100);color:var(--cth-ink-900);
+       font-family:"Inter",-apple-system,"Segoe UI",system-ui,sans-serif;
+       background-image:repeating-linear-gradient(45deg, var(--noise) 0 1px, transparent 1px 6px);}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 100px}
+
+  .top{position:sticky;top:0;z-index:5;background:var(--cth-cream-100);border-bottom:1px solid var(--cth-cream-300);
+       padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+  .top h1{margin:0;font-size:15px;font-weight:700}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--cth-ink-500)}
+  .toggle button{border:1px solid var(--cth-ink-300);background:var(--cth-paper-100);color:var(--cth-ink-900);
+                  border-radius:var(--cth-radius-pill);padding:6px 14px;font-size:12.5px;cursor:pointer}
+  .toggle button.active{background:var(--cth-ink-900);color:var(--cth-cream-100);border-color:var(--cth-ink-900)}
+
+  section{margin-top:48px}
+  section h2{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--cth-ink-500);
+             margin:0 0 6px;padding-bottom:8px;border-bottom:1px solid var(--cth-cream-300)}
+  section p.note{font-size:13px;color:var(--cth-ink-500);margin:8px 0 18px;max-width:74ch;line-height:1.6}
+  .src{font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:2px 7px;border-radius:var(--cth-radius-pill)}
+  .src.sourced{background:var(--cth-mint-light);color:var(--cth-mint)}
+  .src.approx{background:var(--cth-lemon-light);color:var(--cth-lemon)}
+
+  .swatch-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  .swatch{border-radius:var(--cth-radius-md);overflow:hidden;box-shadow:var(--cth-panel-border)}
+  .swatch .fill{height:52px}
+  .swatch .meta{padding:8px 10px;background:var(--cth-paper-100)}
+  .swatch .name{font-size:11px;font-weight:700}
+  .swatch .hex{font-size:10.5px;color:var(--cth-ink-500);font-family:"JetBrains Mono",monospace}
+
+  .accent-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  .accent-pair{display:flex;flex-direction:column;gap:6px}
+  .accent-swatch{height:44px;border-radius:var(--cth-radius-sm);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+  .accent-label{font-size:11px;font-weight:700;text-align:center}
+  .accent-old{font-size:10px;color:var(--cth-ink-500);text-align:center;text-decoration:line-through}
+
+  /* v5 — redesigned per direct critique: the v1-v4 card carried over this
+     app's OLD pixel-game signature (a hard 3px offset shadow, a painted
+     full-bleed title strip in a retro display font) even after adopting
+     PostHog's palette. That's a reskin, not a redesign — PostHog's actual
+     in-product cards get their structure from a HAIRLINE BORDER, not a
+     shadow, and a header is just quiet heading text sitting in the card's
+     own padding, never a separate colored bar. Fixed properly below. */
+  /* v6 — fully flat, per direct feedback: PostHog's actual ethos is hairline
+     borders doing 100% of the structural work, zero shadow anywhere, even on
+     elevated surfaces. A dialog/modal gets its separation from a dimmed
+     backdrop behind it, not a shadow under it — that's how a flat system
+     signals "this is on top" without reintroducing depth cues. */
+  /* v7 — subtle prettiness within a flat, shadow-free language: more generous
+     padding (16→20, still on the 4px grid) reads as considered rather than
+     cramped; the border itself carries hierarchy now instead of a shadow —
+     a soft ink-100 hairline on an ordinary card, a stronger ink-300 one only
+     where it means something (dialog). Neither needs depth to read clearly. */
+  .panel{position:relative;padding:20px;border-radius:var(--cth-radius-md);
+         background:var(--cth-paper-100);
+         box-shadow:inset 0 0 0 1px var(--cth-ink-100);
+         display:flex;flex-direction:column;gap:12px}
+  .panel.dialog{background:var(--cth-paper-100);border-radius:var(--cth-radius-lg);
+      box-shadow:var(--cth-panel-border-dialog)}
+
+  /* Header: plain heading text, the app's own UI font (not the retro display
+     face — a pixel arcade font is a "personality" choice this app made on
+     purpose elsewhere, but it directly contradicts "look like PostHog," so
+     for this system it goes), a thin rule UNDER the text only — not a
+     full-bleed painted strip — and an optional small icon, never a decorative
+     colored dot on every card. Slightly larger + tighter tracking than v6 for
+     a touch more typographic presence; divider softened to ink-100 to match
+     the card's own border instead of the punchier cream-300, so the whole
+     card reads as one considered hairline system rather than two different
+     grays doing the same job. */
+  .ptitle{display:flex;align-items:center;gap:6px;padding-bottom:10px;margin-bottom:2px;
+          color:var(--cth-ink-900);font-family:"Inter Tight","Inter",sans-serif;
+          font-size:14.5px;font-weight:600;letter-spacing:-.015em;
+          border-bottom:1px solid var(--cth-ink-100)}
+  .ptitle .dot{display:none}
+
+  /* Active/selected: a thin all-around ring + a faint tint — never a colored
+     left-border stripe, which is one of the more recognizable AI-generated-
+     design tells and reads as an afterthought next to a considered card. */
+  .panel.active{background:color-mix(in srgb, var(--accent, var(--cth-primary)) 4%, var(--cth-paper-100));
+      box-shadow:inset 0 0 0 1px var(--accent, var(--cth-primary))}
+  .panel.active .ptitle{color:var(--accent, var(--cth-primary));border-bottom-color:color-mix(in srgb, var(--accent, var(--cth-primary)) 30%, transparent)}
+  .panel p{margin:0;font-size:13px;color:var(--cth-ink-500);line-height:1.6}
+  .panels{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+
+  .btn-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  /* Buttons get a deliberate tactile "pressed sticker" base — a SOLID
+     hard-edged offset block, not a blurred drop shadow. This is a different
+     category from panel elevation (which stays fully flat per the last
+     round of feedback): a button is a thing you press, so a little 3D
+     affordance on the one interactive control per action is legible and
+     doesn't reintroduce the "floating card" depth language everywhere else
+     was just removed. Reference: PostHog's own "Amber CTA" component reads
+     as exactly this — a pressed-paper-sticker effect on the primary action
+     only. Both variants share the same amber base, matching the reference. */
+  .pill{border-radius:var(--cth-radius-sm);border:1.5px solid var(--cth-primary);background:var(--cth-paper-100);
+        color:var(--cth-ink-900);font-size:13px;font-weight:600;padding:9px 16px;cursor:pointer;
+        box-shadow:0 3px 0 0 var(--cth-primary);transition:transform 80ms ease, box-shadow 80ms ease}
+  .pill.solid{background:var(--cth-primary);color:#1D1F27;border:none;
+        box-shadow:0 3px 0 0 color-mix(in srgb, var(--cth-primary) 65%, black)}
+  .pill:active{transform:translateY(3px);box-shadow:0 0 0 0 transparent}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:var(--cth-radius-pill)}
+
+  .app-frame{border-radius:var(--cth-radius-lg);overflow:hidden;box-shadow:var(--cth-panel-border-dialog)}
+  .app{display:flex;height:600px;background:var(--cth-cream-100)}
+  .app-sidebar{width:220px;flex-shrink:0;background:var(--cth-paper-100);box-shadow:inset -1px 0 0 var(--cth-ink-100);
+               padding:16px;display:flex;flex-direction:column;gap:16px}
+  .app-brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px}
+  .app-brand .mark{width:22px;height:22px;border-radius:var(--cth-radius-sm);background:var(--cth-primary);color:#fff;
+                    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+  .app-section-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--cth-ink-500);margin:6px 0 2px}
+  .app-nav-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--cth-radius-sm);font-size:12.5px;color:var(--cth-ink-500)}
+  .app-nav-item.active{background:var(--cth-primary-soft);color:var(--cth-primary);font-weight:700}
+  /* Redesigned: a chip on every row reads as noise once there's more than two
+     or three agents — the same status information moves onto the avatar
+     itself (a small corner dot, the Slack/Linear presence-indicator pattern),
+     freeing the row for a clean two-line name+status block instead of a
+     name competing with a colored pill for the same 220px of width. Circular
+     avatar, not rounded-square — round reads as "a person," square as "a
+     file/object," and an agent is a person here. */
+  .app-agent{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:var(--cth-radius-sm);
+             cursor:pointer;transition:background 120ms ease}
+  .app-agent:hover{background:var(--cth-cream-200)}
+  .app-agent .av-wrap{position:relative;flex-shrink:0}
+  .app-agent .av{width:28px;height:28px;border-radius:50%;color:#fff;font-size:11px;font-weight:600;
+                  display:flex;align-items:center;justify-content:center}
+  .app-agent .status-dot{position:absolute;right:-1px;bottom:-1px;width:9px;height:9px;border-radius:50%;
+                          box-shadow:0 0 0 2px var(--cth-paper-100)}
+  .app-agent .meta{min-width:0;flex:1;line-height:1.35}
+  .app-agent .agent-name{display:block;font-size:12.5px;font-weight:600;color:var(--cth-ink-900);
+                          white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .app-agent .agent-status{display:block;font-size:11px;color:var(--cth-ink-500);
+                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .app-main{flex-grow:1;padding:16px;display:flex;flex-direction:column;gap:16px;overflow:auto}
+  .app-topbar{display:flex;align-items:center;justify-content:space-between}
+  .app-topbar h2{margin:0;font-size:16px}
+  .app-cols{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;flex-grow:1}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>PostHog-inspired redesign — proposed, not yet implemented</h1>
+  <div class="toggle">
+    Theme:
+    <button id="btnLight" class="active" onclick="setTheme('light')">Light</button>
+    <button id="btnDark" onclick="setTheme('dark')">Dark</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section>
+    <h2>00 — What's sourced vs. approximated</h2>
+    <p class="note">
+      <span class="src sourced">SOURCED</span> = pulled directly from PostHog's public open-source repo
+      (frontend/src/styles/lemon-skin.scss, @posthog/quill's published primitives.css) on 2026-09-18 — radius
+      scale, the brand orange accent (light + dark), and the six new agent-identity colors (from their real
+      15-color categorical data-viz palette).<br><br>
+      <span class="src approx">APPROXIMATED</span> = their exact neutral-cool / posthog-3000 hex steps are
+      compiled into a private/internal token source, not present in any published dist file I could reach — the
+      base neutral scale below matches their documented STRUCTURE (cool blue-gray, white cards, same relative
+      lightness steps our own ramp already contrast-verified) but is not a pixel-sampled exact match. Flagged
+      here rather than presented as more certain than it is.
+    </p>
+  </section>
+
+  <section>
+    <h2>01 — Base neutral: warm → cool <span class="src approx">approximated</span></h2>
+    <p class="note">The single biggest structural change: our whole base (app background, cards, borders) moves
+      from the warm cream/paper family to PostHog's cool blue-gray neutral. This is a bigger shift than the
+      earlier pass, which only changed shade, not temperature.</p>
+    <div class="swatch-row" id="swatches"></div>
+  </section>
+
+  <section>
+    <h2>02 — Six agent-identity accents: fully replaced <span class="src sourced">sourced</span></h2>
+    <p class="note">Per your decision: these were previously out of scope (functional, already contrast-verified)
+      but you chose a complete PostHog match, so all six are replaced with picks from PostHog's own published
+      categorical palette — chosen for maximum separation and to stay clear of the brand-orange family.</p>
+    <div class="accent-row" id="accents"></div>
+  </section>
+
+  <section>
+    <h2>03 — Brand primary: "Amber Glow" <span class="src sourced">sourced</span></h2>
+    <p class="note">Replaces the indigo-blue <code>--cth-primary</code> from the last pass. Light: <code>#EB9D2A</code>
+      — PostHog's actual primary CTA color, per your direct request over the orange-red I'd first pulled from an
+      in-product token. Dark: lightened slightly (<code>#F0B24E</code>) for contrast against a dark ground, same
+      reasoning this system already applies to every other accent in dark mode.</p>
+    <p class="note"><b>Button treatment added</b>: a solid, hard-edged "pressed sticker" base under both buttons —
+      not a blurred shadow, so it doesn't contradict "flat, no shadows" for panels. Buttons are things you press;
+      a small tactile 3D cue there is legible and stays contained to interactive controls, matching the reference
+      screenshot and the marketing extraction's own description of the Amber CTA as a "pressed paper sticker."</p>
+    <div class="btn-row">
+      <button class="pill">Ghost</button>
+      <button class="pill solid">Primary action</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>04 — Radius: unchanged <span class="src sourced">sourced, already matched</span></h2>
+    <p class="note">PostHog's actual radius scale (4px / 6px / 10px) is nearly identical to what this app already
+      adopted independently in the last pass — no change needed here.<br><br>
+      <b>Shadow: removed entirely</b>, per direct feedback — this system is now fully flat. Every surface's edge
+      comes from a 1px hairline border alone, with zero drop shadow anywhere, including the dialog/modal variant.
+      A dimmed backdrop (not a shadow) is what would signal "this is on top" for an actual modal.</p>
+  </section>
+
+  <section>
+    <h2>05 — Panels &amp; chips, in the new palette</h2>
+    <div class="panels">
+      <div class="panel"><div class="ptitle">Command Centre</div><p>Default panel — hairline border, whisper shadow, quiet heading text.</p></div>
+      <div class="panel active" style="--accent:var(--cth-mint)"><div class="ptitle">Pam — active</div><p>Thin all-around ring in mint, never a colored left-border stripe.</p></div>
+      <div class="panel dialog"><div class="ptitle">Confirm</div><p>Dialog variant — the one place a real soft shadow earns its keep.</p></div>
+    </div>
+    <div class="chips" style="margin-top:16px">
+      <span class="chip" style="background:var(--cth-sky-light);color:var(--cth-sky)">Working</span>
+      <span class="chip" style="background:var(--cth-mint-light);color:var(--cth-mint)">Done</span>
+      <span class="chip" style="background:var(--cth-primary-soft);color:var(--cth-primary)">Primary</span>
+      <span class="chip" style="background:var(--cth-coral-light);color:var(--cth-coral)">Blocked</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>06 — Applied: one full page, in context</h2>
+    <p class="note">Same Command Centre layout as the last pass, re-rendered with the cool base, the six new
+      agent colors, and PostHog orange as the primary action color. Icons are unchanged, per your request —
+      this uses the same simple line-icon placeholders as before, not a new icon set.</p>
+    <div class="app-frame">
+      <div class="app">
+        <div class="app-sidebar">
+          <div class="app-brand"><span class="mark">MD</span>Munder Difflin</div>
+          <div>
+            <div class="app-section-label">Workspace</div>
+            <div class="app-nav-item active">Command Centre</div>
+            <div class="app-nav-item">Agent Threads</div>
+            <div class="app-nav-item">Automations</div>
+          </div>
+          <div>
+            <div class="app-section-label">On the floor</div>
+            <div class="app-agent">
+              <span class="av-wrap"><span class="av" style="background:var(--cth-sky)">M</span><span class="status-dot" style="background:var(--cth-status-working)"></span></span>
+              <span class="meta"><span class="agent-name">Michael</span><span class="agent-status">Working</span></span>
+            </div>
+            <div class="app-agent">
+              <span class="av-wrap"><span class="av" style="background:var(--cth-mint)">P</span><span class="status-dot" style="background:var(--cth-status-working)"></span></span>
+              <span class="meta"><span class="agent-name">Pam</span><span class="agent-status">Working</span></span>
+            </div>
+            <div class="app-agent">
+              <span class="av-wrap"><span class="av" style="background:var(--cth-coral)">D</span><span class="status-dot" style="background:var(--cth-status-blocked)"></span></span>
+              <span class="meta"><span class="agent-name">Dwight</span><span class="agent-status">Blocked</span></span>
+            </div>
+            <div class="app-agent">
+              <span class="av-wrap"><span class="av" style="background:var(--cth-ink-300)">A</span><span class="status-dot" style="background:var(--cth-status-idle)"></span></span>
+              <span class="meta"><span class="agent-name">Angela</span><span class="agent-status">Idle</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="app-main">
+          <div class="app-topbar">
+            <h2>Command Centre</h2>
+            <button class="pill solid">+ New task</button>
+          </div>
+          <div class="app-cols">
+            <div class="panel active" style="--accent:var(--cth-mint); flex:1;">
+              <div class="ptitle">Pam — Working</div>
+              <p style="flex-grow:1">Terminal / task output renders here.</p>
+            </div>
+            <div class="panel" style="flex:1">
+              <div class="ptitle">Recent Activity</div>
+              <p>Release checklist drafted · PR #212 reviewed · Changelog summarised.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('btnLight').classList.toggle('active', t==='light');
+    document.getElementById('btnDark').classList.toggle('active', t==='dark');
+  }
+  var baseVars = ['--cth-cream-50','--cth-cream-100','--cth-cream-200','--cth-cream-300','--cth-paper-100','--cth-paper-200'];
+  var row = document.getElementById('swatches');
+  var cs = getComputedStyle(document.documentElement);
+  baseVars.forEach(function(name){
+    var val = cs.getPropertyValue(name).trim();
+    var el = document.createElement('div');
+    el.className = 'swatch';
+    el.innerHTML = '<div class="fill" style="background:var(' + name + ')"></div>' +
+                   '<div class="meta"><div class="name">' + name + '</div><div class="hex">' + val + '</div></div>';
+    row.appendChild(el);
+  });
+  var accents = [
+    ['coral', '#D96A62'], ['mint', '#5CA97A'], ['sky', '#4F9FAF'],
+    ['lemon', '#DCAB3C'], ['lilac', '#9482D3'], ['peach', '#D99168']
+  ];
+  var arow = document.getElementById('accents');
+  accents.forEach(function(p){
+    var name = p[0], oldHex = p[1];
+    var el = document.createElement('div');
+    el.className = 'accent-pair';
+    el.innerHTML = '<div class="accent-swatch" style="background:var(--cth-' + name + ')"></div>' +
+                   '<div class="accent-label">--cth-' + name + '</div>' +
+                   '<div class="accent-old">was ' + oldHex + '</div>';
+    arow.appendChild(el);
+  });
+</script>
+
+</body>
+</html>

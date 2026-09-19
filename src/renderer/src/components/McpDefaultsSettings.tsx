@@ -21,7 +21,7 @@ const TIER_NOTE_KEY: Record<McpTier, string> = {
 
 const labelStyle: React.CSSProperties = {
   fontFamily: 'var(--cth-font-display)',
-  fontSize: 8,
+  fontSize: 11,
   lineHeight: '12px',
   color: 'var(--cth-ink-500)',
   textTransform: 'uppercase'
@@ -67,13 +67,13 @@ export function McpDefaultsSettings({ config }: McpDefaultsSettingsProps) {
           <div key={tier} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <span style={{
-                fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
-                color: isConsent ? '#6E1423' : 'var(--cth-ink-500)',
+                fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '12px',
+                color: isConsent ? 'var(--cth-danger-text)' : 'var(--cth-ink-500)',
                 textTransform: 'uppercase'
               }}>
                 {t(TIER_LABEL_KEY[tier])}
               </span>
-              <span style={{ fontSize: 11, lineHeight: '15px', color: 'var(--cth-ink-400, var(--cth-ink-500))' }}>
+              <span style={{ fontSize: 11, lineHeight: '15px', color: 'var(--cth-ink-500)' }}>
                 {t(TIER_NOTE_KEY[tier])}
               </span>
             </div>
@@ -88,7 +88,7 @@ export function McpDefaultsSettings({ config }: McpDefaultsSettingsProps) {
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       gap: 12, padding: '7px 10px',
                       background: 'var(--cth-paper-100)',
-                      boxShadow: `inset 0 0 0 1px ${isConsent && on ? '#6E1423' : 'var(--cth-ink-300)'}`
+                      boxShadow: `inset 0 0 0 1px ${isConsent && on ? 'var(--cth-danger-text)' : 'var(--cth-ink-300)'}`
                     }}
                   >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 0 }}>
@@ -118,7 +118,7 @@ export function McpDefaultsSettings({ config }: McpDefaultsSettingsProps) {
                         boxShadow: `inset 0 0 0 1px ${on ? 'var(--cth-ink-900)' : 'var(--cth-ink-700)'}`,
                         border: 'none',
                         fontFamily: 'var(--cth-font-display)',
-                        fontSize: 8,
+                        fontSize: 11,
                         lineHeight: '14px',
                         color: 'var(--cth-ink-900)',
                         cursor: 'pointer',

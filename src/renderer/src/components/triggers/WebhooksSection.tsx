@@ -205,7 +205,7 @@ function WebhookRow({ hook, url, serverRunning, onPatch, onDelete }: {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{
                   flex: 1, minWidth: 0, padding: '4px 6px',
-                  background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                  background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                   fontFamily: 'var(--cth-font-mono)', fontSize: 11, lineHeight: '15px',
                   color: 'var(--cth-ink-900)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
                 }}>{url}</span>

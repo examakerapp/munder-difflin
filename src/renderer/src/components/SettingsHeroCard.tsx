@@ -101,7 +101,7 @@ export function SettingsHeroCard() {
             <span style={{
               fontFamily: MONO, fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase',
               padding: '2px 7px', background: 'var(--cth-mint-light)',
-              boxShadow: 'inset 0 0 0 1px var(--cth-mint)', color: INK
+              boxShadow: 'inset 0 0 0 1px var(--cth-mint), 2px 2px 0 0 var(--cth-mint)', color: INK
             }}>{PLAN.label}</span>
             {pending && (
               <>

@@ -131,7 +131,7 @@ function clampBody(body: string): { text: string; clipped: boolean } {
 /* ───────────────────────────────── styles ────────────────────────────────── */
 
 const tinyCaps: CSSProperties = {
-  fontFamily: 'var(--cth-font-display)', fontSize: 9, lineHeight: '12px',
+  fontFamily: 'var(--cth-font-display)', fontSize: 12, lineHeight: '12px',
   color: 'var(--cth-ink-500)'
 };
 const uiText: CSSProperties = {
@@ -143,17 +143,17 @@ const ellipsis: CSSProperties = { overflow: 'hidden', textOverflow: 'ellipsis', 
 
 const cardStyle: CSSProperties = {
   background: 'var(--cth-paper-100)',
-  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   padding: 8, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0
 };
 const pendingCardStyle: CSSProperties = {
   ...cardStyle,
   background: 'var(--cth-cream-100)',
-  boxShadow: 'inset 0 0 0 2px var(--cth-lemon)'
+  boxShadow: 'inset 0 0 0 2px var(--cth-lemon), 2px 2px 0 0 var(--cth-lemon)'
 };
 const bodyBox: CSSProperties = {
   background: 'var(--cth-cream-200)',
-  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   padding: '6px 8px',
   fontFamily: 'var(--cth-font-mono)', fontSize: 12, lineHeight: '17px',
   color: 'var(--cth-ink-900)',
@@ -167,8 +167,8 @@ const linkButton: CSSProperties = {
 
 function badgeStyle(fill: string, line: string): CSSProperties {
   return {
-    fontFamily: 'var(--cth-font-display)', fontSize: 9, lineHeight: '12px',
-    padding: '3px 5px 2px', background: fill, boxShadow: `inset 0 0 0 1px ${line}`,
+    fontFamily: 'var(--cth-font-display)', fontSize: 12, lineHeight: '12px',
+    padding: '3px 5px 2px', background: fill, boxShadow: `inset 0 0 0 1px ${line}, 2px 2px 0 0 ${line}`,
     color: 'var(--cth-ink-900)', flexShrink: 0
   };
 }
@@ -266,7 +266,7 @@ function ExchangeCard({
     <div style={pending ? pendingCardStyle : cardStyle}>
       {pending && (
         <div style={{
-          background: 'var(--cth-lemon-light)', boxShadow: 'inset 0 0 0 1px var(--cth-lemon)',
+          background: 'var(--cth-lemon-light)', boxShadow: 'inset 0 0 0 1px var(--cth-lemon), 2px 2px 0 0 var(--cth-lemon)',
           padding: '4px 6px 3px', ...tinyCaps, color: 'var(--cth-ink-900)'
         }}>
           {t('triggerHistory.waitingForYou')}
@@ -470,7 +470,7 @@ export function TriggerHistoryTab() {
                 flex: 1, height: 32, padding: '0 8px', border: 'none', cursor: 'pointer',
                 background: active ? 'var(--cth-paper-200)' : 'transparent',
                 boxShadow: active ? 'inset 0 -2px 0 var(--cth-ink-900)' : 'none',
-                fontFamily: 'var(--cth-font-display)', fontSize: 9, lineHeight: '12px',
+                fontFamily: 'var(--cth-font-display)', fontSize: 12, lineHeight: '12px',
                 color: active ? 'var(--cth-ink-900)' : 'var(--cth-ink-500)',
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                 minWidth: 0
@@ -496,7 +496,7 @@ export function TriggerHistoryTab() {
 
         {pendingCount > 0 && (
           <div style={{
-            background: 'var(--cth-lemon-light)', boxShadow: 'inset 0 0 0 1px var(--cth-lemon)',
+            background: 'var(--cth-lemon-light)', boxShadow: 'inset 0 0 0 1px var(--cth-lemon), 2px 2px 0 0 var(--cth-lemon)',
             padding: '6px 8px', ...uiText, fontSize: 11, lineHeight: '16px'
           }}>
             {pendingCount === 1
@@ -507,7 +507,7 @@ export function TriggerHistoryTab() {
 
         {error && (
           <div style={{
-            background: 'var(--cth-coral-light)', boxShadow: 'inset 0 0 0 1px var(--cth-coral)',
+            background: 'var(--cth-coral-light)', boxShadow: 'inset 0 0 0 1px var(--cth-coral), 2px 2px 0 0 var(--cth-coral)',
             padding: '6px 8px', ...uiText, fontSize: 11, lineHeight: '16px'
           }}>{error}</div>
         )}

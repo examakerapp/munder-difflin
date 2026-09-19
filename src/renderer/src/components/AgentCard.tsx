@@ -76,18 +76,38 @@ export function AgentCard({
   // 1px panel border, and selection is one accent-independent ring — identical on
   // every card, god included.
 
-  // The selected card wears an ink ring OUTSIDE its border. ink-900 rather than
-  // an accent so the cue is identical on every agent, and it flips with the
-  // theme (near-black on cream, near-white on the dark ground), staying legible
-  // over whatever accent the card already carries.
-  const selectionRing = selected ? '0 0 0 2px var(--cth-ink-900)' : '';
+  // v0.5.0: replaced the outline-ring selection cue with a tinted SURFACE —
+  // a filled primary-tinted background + a primary-colored border, the way
+  // PostHog signals "selected" on a list item (no separate outline element
+  // at all). Uses --cth-primary rather than an accent so the cue reads the
+  // same on every agent regardless of its own color, same reasoning the old
+  // ink-ring had. Wins over the god tint when both are true — selection is a
+  // live, temporary state and should read as the dominant signal over the
+  // permanent "this is the boss" marker.
+  // v0.6.0: restored the inset ring alongside the offset shadow — a single
+  // offset shadow with no ring (the previous v0.6.0 pass, chasing
+  // design-system.html literally) left the card with NO visible outline at
+  // rest, since this app draws its "border" as an inset box-shadow rather
+  // than a real CSS border. Design-system.html's own card actually uses a
+  // real `border: 2px solid var(--orange-dark)` in addition to its offset
+  // shadow — this is that same two-part look, expressed the way every other
+  // panel/button in this codebase already draws a border.
+  const selectedSurface: React.CSSProperties = selected
+    ? {
+        background: 'var(--cth-primary-soft)',
+        boxShadow: 'inset 0 0 0 2px var(--cth-primary), 3px 3px 0 0 var(--cth-primary)'
+      }
+    : {};
 
   // Context gauge as ONE clean fill (0..8 → 0..100%). Colour escalates as the
   // window fills: accent while comfortable, amber from 6/8, coral from 7/8.
   const pct = Math.min(8, Math.max(0, progress)) / 8 * 100;
+  // v0.6.0: brand orange while comfortable (matches design-system.html's
+  // `.progress-fill { background: var(--orange); }`, always-orange regardless
+  // of the agent), escalating to coral/lemon as a semantic fill-level warning.
   const gaugeColor = progress >= 7 ? 'var(--cth-coral)'
     : progress >= 6 ? 'var(--cth-lemon)'
-      : `var(--cth-${accent})`;
+      : 'var(--cth-primary)';
   const gaugeTitle = contextTokens !== undefined && contextLimit
     ? t('agentCard.contextTitle', { used: fmtK(contextTokens), limit: fmtK(contextLimit), pct: Math.round((contextTokens / contextLimit) * 100) })
     : t('agentCard.contextGaugeTitle');
@@ -102,7 +122,9 @@ export function AgentCard({
   // that gets cut. Widened for every card so the dock stays uniform, with enough
   // slack that Talk's info mark (which only appears when the OpenAI key is
   // missing) has somewhere to sit rather than pushing the row apart.
-  const width = 220;
+  // Width bumped from the original 220 per direct request — everything else
+  // in this file is restored exactly to the original open-source version.
+  const width = 240;
   const height = 78;
   const lift = (isGod ? -2 : 0) - (hover ? 1 : 0) - (selected ? 1 : 0);
   /** God's distinction: a tinted surface plus a thin accent border all the way
@@ -114,15 +136,30 @@ export function AgentCard({
   const godSurface: React.CSSProperties = isGod
     ? {
         background: `var(--cth-${accent}-light)`,
-        boxShadow: `inset 0 0 0 1px var(--cth-${accent})`
+        boxShadow: `inset 0 0 0 1px var(--cth-${accent}), 2px 2px 0 0 var(--cth-${accent})`
       }
     : {};
-  const dropShadow = isGod
-    ? `2px 3px 0 0 rgba(26,19,32,${hover ? 0.2 : 0.14})`
-    : (hover ? '1px 2px 0 0 rgba(26,19,32,0.12)' : 'none');
-  // Ring first so it sits tight to the card, then the existing drop shadow.
-  const outerShadow = [selectionRing, dropShadow === 'none' ? '' : dropShadow]
-    .filter(Boolean).join(', ') || 'none';
+
+  // v0.6.0: worker (non-god) cards tint green while actively working and
+  // unselected — the god treatment above is untouched on direct request, so
+  // this is scoped to `!isGod` only. Loses to `selectedSurface` below (same
+  // "selection is the dominant live signal" rule godSurface already follows).
+  // Idle stays whatever the card's plain default already is — no separate
+  // "idle theme" needed there.
+  const workingSurface: React.CSSProperties = (!isGod && !selected && status === 'working')
+    ? {
+        background: 'color-mix(in srgb, var(--cth-status-working) 10%, var(--cth-paper-100))',
+        boxShadow: 'inset 0 0 0 1px var(--cth-status-working), 2px 2px 0 0 var(--cth-status-working)'
+      }
+    : {};
+  // v0.5.x: this used to be a soft blurred rgba shadow on the outer wrapper.
+  // PixelPanel now draws its own flat, un-blurred, border-colored offset
+  // shadow on every card automatically (see PixelPanel.tsx) — keeping a
+  // second, blurred shadow on top of that would mix the two shadow
+  // languages design-system.html explicitly treats as incompatible
+  // ("never a soft/blurred shadow"). The wrapper contributes no shadow of
+  // its own now; elevation comes from PixelPanel alone.
+  const outerShadow = 'none';
 
   // One context line: what it's DOING while working, WHERE it lives while idle.
   const infoLine = (status !== 'idle' && action) ? action : project;
@@ -156,6 +193,28 @@ export function AgentCard({
         transition: 'transform 90ms steps(2, end), box-shadow 90ms steps(2, end)'
       }}
     >
+      {/* v0.6.0: design-system.html's `.selected-check` — a corner ribbon with a
+          checkmark, the one selection cue the tinted-surface treatment above
+          didn't carry over. Moved to the top-left per direct request; cut
+          corner mirrored to bottom-right so it still hugs the card's actual
+          corner (top-left of the ribbon stays sharp against the card edge). */}
+      {selected && (
+        <span
+          aria-hidden="true"
+          style={{
+            position: 'absolute', top: -2, left: -2, zIndex: 2,
+            width: 20, height: 20,
+            background: 'var(--cth-primary)',
+            boxShadow: 'inset 0 0 0 2px color-mix(in srgb, var(--cth-primary) 65%, black)',
+            borderRadius: '0 0 6px 0',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}
+        >
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#fff" strokeWidth={2.5}>
+            <path d="M3 8l3.5 3.5L13 4.5" />
+          </svg>
+        </span>
+      )}
       {/* The taken note, stuck to the card like on the desk: this worker is
           actively DOING a ledger task. Click → the task's detail overlay. */}
       {doingCount > 0 && (
@@ -171,7 +230,7 @@ export function AgentCard({
             boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 1px 2px 0 rgba(26,19,32,0.18)',
             transform: 'rotate(4deg)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--cth-font-display)', fontSize: 8, color: 'var(--cth-ink-900)',
+            fontFamily: 'var(--cth-font-display)', fontSize: 11, color: 'var(--cth-ink-900)',
             cursor: 'pointer'
           }}
         >
@@ -180,7 +239,12 @@ export function AgentCard({
       )}
       <PixelPanel
         variant="default"
-        style={{ height: '100%', padding: '6px 8px', ...godSurface }}
+        // v0.6.0: extra bottom padding makes room for the gauge, which now
+        // sits OUTSIDE the content flow as an absolutely-positioned strip
+        // flush with the card's bottom edge (design-system.html's
+        // `.progress-track`), instead of taking its own row inside the
+        // padded column — frees vertical space for the rest of the card.
+        style={{ height: '100%', padding: '6px 8px 10px', position: 'relative', ...godSurface, ...workingSurface, ...selectedSurface }}
         noPadding
       >
         <div style={{ display: 'flex', gap: 8, height: '100%' }}>
@@ -191,7 +255,7 @@ export function AgentCard({
             // vanish into its own background. Paper reads as an inset frame
             // against the tint, which is what the tile is meant to look like.
             background: isGod ? 'var(--cth-paper-100)' : `var(--cth-${accent}-light)`,
-            boxShadow: `inset 0 0 0 1px var(--cth-ink-${isGod ? '300' : '100'})`,
+            boxShadow: `inset 0 0 0 1px var(--cth-ink-${isGod ? '300' : '100'}), 2px 2px 0 0 var(--cth-ink-${isGod ? '300' : '100'})`,
             // Anchor the sprite's TOP: the 56px-tall portrait overflows this
             // tile, and bottom-anchoring cropped the head — crop feet, not face.
             display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflow: 'hidden',
@@ -207,21 +271,33 @@ export function AgentCard({
                 {onRename ? (
                   <AgentNameEditor name={name} onCommit={onRename} uppercase />
                 ) : (
+                  // v0.6.0: agent names keep the pixel face on direct request —
+                  // --cth-font-display now resolves to the UI font everywhere
+                  // else, so this reaches the literal pixel stack
+                  // (--cth-font-pixel) instead, at the size that face was
+                  // originally tuned for (8px reads fine on Press Start 2P;
+                  // 11px was the bump for a real sans-serif).
                   <span style={{
-                    fontFamily: 'var(--cth-font-display)',
-                    fontSize: 'var(--cth-text-display-sm)',
-                    lineHeight: 'var(--cth-lh-display-sm)',
+                    fontFamily: 'var(--cth-font-pixel)',
+                    fontSize: 8,
+                    lineHeight: '12px',
                     color: 'var(--cth-ink-900)',
                     flex: 1, minWidth: 0,
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
                   }}>{name.toUpperCase()}</span>
                 )}
                 {isGod && (
+                  // Pixel face restored alongside the name (v0.6.0) — the two
+                  // sit right next to each other, so they stay on the same font.
                   <span style={{
-                    fontFamily: 'var(--cth-font-display)', fontSize: 7, lineHeight: '11px',
-                    background: `var(--cth-${accent})`, color: 'var(--cth-ink-900)',
-                    padding: '1px 4px 0', flexShrink: 0
-                  }}>{t('agentCard.boss')}</span>                )}
+                    fontFamily: 'var(--cth-font-pixel)', fontSize: 7, lineHeight: '18px', fontWeight: 700,
+                    // v0.6.0: brand orange role pill (design-system.html's
+                    // `.pill.role`), white text for contrast against the
+                    // saturated orange fill (not the agent's own accent).
+                    background: 'var(--cth-primary)', color: 'var(--cth-on-primary)',
+                    padding: '2px 8px 0', flexShrink: 0
+                  }}>{t('agentCard.boss')}</span>
+                )}
               </span>
               {/* flexShrink:0 — the badge is a fixed 2-to-5 character chip; when
                   it was allowed to shrink, the browser resolved the overflow by
@@ -294,19 +370,17 @@ export function AgentCard({
                 )}
               </div>
             )}
-
-            {/* Context gauge — slim fill bar pinned to the card's bottom edge. */}
-            <div style={{ marginTop: 'auto' }} title={gaugeTitle}>
-              <div style={{
-                height: 4, width: '100%',
-                background: 'var(--cth-cream-200)',
-                boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
-                overflow: 'hidden'
-              }}>
-                <div style={{ width: `${pct}%`, height: '100%', background: gaugeColor }} />
-              </div>
-            </div>
           </div>
+        </div>
+        {/* Context gauge — flush with the card's bottom edge, outside the
+            padded content column entirely (design-system.html's
+            `.progress-track`). PixelPanel's own overflow:hidden clips it to
+            the card's rounded corners. */}
+        <div
+          style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 4, background: 'var(--cth-cream-200)' }}
+          title={gaugeTitle}
+        >
+          <div style={{ width: `${pct}%`, height: '100%', background: gaugeColor }} />
         </div>
       </PixelPanel>
     </div>

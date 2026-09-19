@@ -38,7 +38,7 @@ const extensions = [json(), EditorView.lineWrapping, editorTheme, syntaxHighligh
 
 export function JsonEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div style={{ background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)' }}>
+    <div style={{ background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)' }}>
       <CodeMirror
         value={value}
         onChange={onChange}

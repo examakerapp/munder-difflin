@@ -180,7 +180,7 @@ export function AskMeTab() {
         const stuck = dependentsTree(t.id, tasks);
         return (
           <div key={t.id} style={{
-            background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+            background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
             display: 'flex', flexDirection: 'column'
           }}>
             {/* header: title + assignee */}
@@ -241,7 +241,7 @@ export function AskMeTab() {
                 style={{
                   width: '100%', boxSizing: 'border-box', padding: '6px 8px', resize: 'vertical',
                   background: 'var(--cth-paper-100)', border: 'none',
-                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                   fontFamily: 'var(--cth-font-mono)', fontSize: 15, lineHeight: '18px',
                   color: 'var(--cth-ink-900)', outline: 'none'
                 }}
@@ -260,7 +260,7 @@ export function AskMeTab() {
                     title={translate('askMe.viewAnswersHistory')}
                     style={{
                       border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
-                      fontSize: 10, color: 'var(--cth-ink-700)', fontFamily: 'var(--cth-font-display)',
+                      fontSize: 13, color: 'var(--cth-ink-700)', fontFamily: 'var(--cth-font-display)',
                       textDecoration: 'underline'
                     }}
                   >
@@ -277,7 +277,7 @@ export function AskMeTab() {
               {/* the cascade: what's stuck behind this answer */}
               {stuck.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <div style={{ fontFamily: 'var(--cth-font-display)', fontSize: 8, color: 'var(--cth-coral)' }}>
+                  <div style={{ fontFamily: 'var(--cth-font-display)', fontSize: 11, color: 'var(--cth-coral)' }}>
                     {stuck.length === 1
                       ? translate('askMe.blockingDownstream', { count: stuck.length })
                       : translate('askMe.blockingDownstreamPlural', { count: stuck.length })}
@@ -289,7 +289,7 @@ export function AskMeTab() {
                       fontSize: 12, color: 'var(--cth-ink-700)'
                     }}>
                       <span style={{ color: 'var(--cth-ink-300)' }}>└</span>
-                      <span style={{ width: 7, height: 7, flexShrink: 0, background: d.status === 'blocked' ? 'var(--cth-coral)' : 'var(--cth-sky)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)' }} />
+                      <span style={{ width: 7, height: 7, flexShrink: 0, background: d.status === 'blocked' ? 'var(--cth-coral)' : 'var(--cth-sky)' }} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.title}</span>
                       {nameFor(d.assignee) && <span style={{ fontSize: 10, color: 'var(--cth-ink-500)' }}>({nameFor(d.assignee)})</span>}
                     </div>

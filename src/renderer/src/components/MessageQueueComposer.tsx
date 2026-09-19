@@ -208,14 +208,17 @@ export function MessageQueueComposer({ agent }: MessageQueueComposerProps) {
       }}>
       {dragOver && (
         <span style={{
-          fontFamily: 'var(--cth-font-display)', fontSize: 9, lineHeight: '12px',
+          fontFamily: 'var(--cth-font-display)', fontSize: 12, lineHeight: '12px',
           color: 'var(--cth-ink-700)', textAlign: 'center'
         }}>{t('queueComposer.dropToAttach')}</span>
       )}
       {/* Header: label, count, status, clear-all */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{
-          fontFamily: 'var(--cth-font-display)',
+          // v0.6.0: pixel face restored on direct request, same as the
+          // Command Center title/IDE button and agent names —
+          // --cth-font-display now resolves to the UI font everywhere else.
+          fontFamily: 'var(--cth-font-pixel)',
           fontSize: 9, lineHeight: '12px',
           color: 'var(--cth-ink-700)'
         }}>{t('queueComposer.queue')}</span>
@@ -223,7 +226,7 @@ export function MessageQueueComposer({ agent }: MessageQueueComposerProps) {
           <span style={{
             fontSize: 11, padding: '1px 6px 0',
             background: 'var(--cth-cream-200)',
-            boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+            boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
             fontFamily: 'var(--cth-font-ui)', color: 'var(--cth-ink-900)'
           }}>{queue.length}</span>
         )}
@@ -317,7 +320,7 @@ export function MessageQueueComposer({ agent }: MessageQueueComposerProps) {
                 maxWidth: '100%',
                 padding: '2px 4px 2px 6px',
                 background: 'var(--cth-cream-200)',
-                boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                 fontFamily: 'var(--cth-font-mono)', fontSize: 12, lineHeight: '16px',
                 color: 'var(--cth-ink-900)'
               }}
@@ -476,7 +479,7 @@ function QueuedMessageRow(
       display: 'flex', alignItems: 'flex-start', gap: 6,
       padding: '4px 6px',
       background: 'var(--cth-paper-100)',
-      boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+      boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)'
     }}>
       <span style={{
         fontFamily: 'var(--cth-font-mono)', fontSize: 12,
@@ -680,13 +683,13 @@ function FreeFlowButton({ agentId, hasGroqKey }: { agentId: string; hasGroqKey: 
                 width: HINT_W, padding: '10px 12px', boxSizing: 'border-box',
                 display: 'flex', flexDirection: 'column', gap: 7,
                 background: 'var(--cth-paper-100)',
-                boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), 4px 4px 0 rgba(26,19,32,0.25)',
+                boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), 4px 4px 0 0 var(--cth-ink-500)',
                 fontFamily: 'var(--cth-font-ui)', fontSize: 11, lineHeight: '15px',
                 color: 'var(--cth-ink-900)', textAlign: 'left', whiteSpace: 'normal'
               }}
             >
               <span style={{
-                fontFamily: 'var(--cth-font-display)', fontSize: 9, letterSpacing: 0.5,
+                fontFamily: 'var(--cth-font-display)', fontSize: 12, letterSpacing: 0.5,
                 textTransform: 'uppercase', color: 'var(--cth-ink-500)'
               }}>{t('queueComposer.ffSetupTitle')}</span>
 

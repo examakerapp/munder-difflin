@@ -64,7 +64,7 @@ export function PixelBadge({ status, label, style }: PixelBadgeProps) {
         gap: 6,
         padding: '2px 8px 0',
         background: 'var(--cth-cream-100)',
-        boxShadow: `inset 0 0 0 1px ${colorByStatus[status]}`,
+        boxShadow: `inset 0 0 0 1px ${colorByStatus[status]}, 2px 2px 0 0 ${colorByStatus[status]}`,
         fontFamily: 'var(--cth-font-ui)',
         fontSize: 'var(--cth-text-body-sm)',
         lineHeight: '18px',
@@ -73,12 +73,16 @@ export function PixelBadge({ status, label, style }: PixelBadgeProps) {
         ...style
       }}
     >
+      {/* v0.6.0: a plain square, not the inset-ring + offset-duplicate shadow
+          this used before — at this size (8px) the "3D sticker" shadow
+          language reads as a second, misaligned square rather than
+          elevation, per direct request. Same fix applied everywhere else
+          this exact dot pattern was copy-pasted. */}
       <span
         style={{
           width: 8,
           height: 8,
-          background: colorByStatus[status],
-          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+          background: colorByStatus[status]
         }}
       />
       {text}

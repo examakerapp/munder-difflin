@@ -36,7 +36,7 @@ function fmtTokens(n: number): string {
 }
 
 const card: React.CSSProperties = {
-  background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+  background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6
 };
 const metaRow: React.CSSProperties = {
@@ -56,7 +56,7 @@ function StatusBadge({ w }: { w: WorkerSnapshot }) {
       fontFamily: 'var(--cth-font-mono)', fontSize: 10, padding: '1px 6px',
       textTransform: 'uppercase', letterSpacing: 0.5,
       color: releasing ? 'var(--cth-paper-100)' : 'var(--cth-ink-900)',
-      background: releasing ? 'var(--cth-ink-700)' : 'var(--cth-green, #2f8f4e)',
+      background: releasing ? 'var(--cth-ink-700)' : 'var(--cth-mint)',
       boxShadow: releasing ? 'none' : 'inset 0 0 0 1px var(--cth-ink-100)'
     }}>
       {releasing ? t('workersTab.stopping') : t('workersTab.working')}
@@ -122,7 +122,7 @@ export function WorkersTab() {
                     {w.hasSlack && (
                       <span title={t('workersTab.repliesToSlack')} style={{
                         fontFamily: 'var(--cth-font-mono)', fontSize: 10, color: 'var(--cth-ink-700)',
-                        boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)', padding: '0 5px'
+                        boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)', padding: '0 5px'
                       }}>slack</span>
                     )}
                   </div>

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { PixelButton } from './PixelButton';
+import { PixelPanel } from './PixelPanel';
 import { Icon } from './Icon';
 import type { BlockReason } from '@/store/store';
 
@@ -11,18 +12,15 @@ export interface BlockedBannerProps {
 export function BlockedBanner({ reason, onAction }: BlockedBannerProps) {
   const { t } = useTranslation();
   return (
-    <div style={{
-      background: 'var(--cth-coral-light)',
-      boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), inset 0 0 0 4px var(--cth-coral)',
-      padding: 12,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 8
-    }}>
+    <PixelPanel
+      variant="alert"
+      noPadding
+      style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}
+    >
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
         fontFamily: 'var(--cth-font-display)',
-        fontSize: 8, lineHeight: '12px',
+        fontSize: 11, lineHeight: '12px',
         color: 'var(--cth-ink-900)',
         textTransform: 'uppercase'
       }}>
@@ -51,7 +49,7 @@ export function BlockedBanner({ reason, onAction }: BlockedBannerProps) {
           color: 'var(--cth-ink-900)',
           background: 'var(--cth-paper-100)',
           padding: '4px 8px',
-          boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+          boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis'
@@ -71,6 +69,6 @@ export function BlockedBanner({ reason, onAction }: BlockedBannerProps) {
           </PixelButton>
         ))}
       </div>
-    </div>
+    </PixelPanel>
   );
 }

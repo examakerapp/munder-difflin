@@ -44,7 +44,14 @@ export class Camera {
 
   private getMinZoom(): number {
     if (this.viewWidth === 0 || this.viewHeight === 0) return 1;
-    return Math.min(this.viewWidth / this.mapWidth, this.viewHeight / this.mapHeight);
+    // Math.max, not Math.min: this is a "cover" fit, not a "contain" fit. A
+    // contain fit (the old behaviour) always shows the whole map, but leaves
+    // letterbox bars — rendered in the canvas's own near-black clear colour —
+    // on whichever axis doesn't match the viewport's aspect ratio. Now that
+    // the floor is a real pannable canvas (see panBy/zoomAt below), there's no
+    // reason to ever show that dead space: covering crops the excess instead,
+    // and the user can drag to see whatever got cropped.
+    return Math.max(this.viewWidth / this.mapWidth, this.viewHeight / this.mapHeight);
   }
 
   /** Fit the whole map to the viewport, centered. */
@@ -61,6 +68,42 @@ export class Camera {
     this.targetX = worldX;
     this.targetY = worldY;
     this.targetZoom = Math.max(this.getMinZoom(), Math.min(4, zoom ?? this.currentZoom));
+  }
+
+  /**
+   * Drag-to-pan, in screen pixels (e.g. pointermove's clientX/Y delta since the
+   * last event). Applied 1:1 with no lerp — a hand-tool drag has to track the
+   * cursor exactly, the smoothing used for focusOn()/nudgeToward() would just
+   * read as lag here. Takes manual control like focusOn() does, so the camera
+   * doesn't snap back to fit-to-screen on the next resize.
+   */
+  panBy(dxScreen: number, dyScreen: number): void {
+    this.manualOverride = true;
+    this.currentX -= dxScreen / this.currentZoom;
+    this.currentY -= dyScreen / this.currentZoom;
+    this.targetX = this.currentX;
+    this.targetY = this.currentY;
+  }
+
+  /**
+   * Scroll-to-zoom, anchored on a screen point (the cursor) so that point stays
+   * under the cursor as the zoom changes, the way every other pan/zoom canvas
+   * behaves. `factor` multiplies the current zoom (e.g. 1.1 to zoom in, 1/1.1 to
+   * zoom out); clamped to the same [minZoom, 4] range as everything else.
+   */
+  zoomAt(screenX: number, screenY: number, factor: number): void {
+    this.manualOverride = true;
+    const worldX = (screenX - this.container.x) / this.currentZoom;
+    const worldY = (screenY - this.container.y) / this.currentZoom;
+    const newZoom = Math.max(this.getMinZoom(), Math.min(4, this.currentZoom * factor));
+    const nextX = (this.viewWidth / 2 - screenX) / newZoom + worldX;
+    const nextY = (this.viewHeight / 2 - screenY) / newZoom + worldY;
+    this.currentZoom = newZoom;
+    this.targetZoom = newZoom;
+    this.currentX = nextX;
+    this.currentY = nextY;
+    this.targetX = nextX;
+    this.targetY = nextY;
   }
 
   /** A gentle, decaying pan toward a world point without taking manual control. */

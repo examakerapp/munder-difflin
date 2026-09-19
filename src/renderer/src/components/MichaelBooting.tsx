@@ -32,8 +32,8 @@ export function MichaelBooting() {
                   key={i}
                   style={{
                     width: 14, height: 14,
-                    background: '#6E1423',
-                    boxShadow: 'var(--cth-shadow-hard)',
+                    background: 'var(--cth-danger-text)',
+                    boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
                     animation: 'cth-blink 1s steps(1, end) infinite',
                     animationDelay: `${i * 0.2}s`
                   }}

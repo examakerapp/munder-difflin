@@ -37,12 +37,12 @@ const ACCENTS: AccentColorName[] = ['coral', 'mint', 'sky', 'lemon', 'lilac', 'p
 const ossChip = (active: boolean, accent: AccentColorName): CSSProperties => ({
   padding: '3px 8px 1px',
   background: active ? `var(--cth-${accent}-light)` : 'var(--cth-cream-100)',
-  boxShadow: active ? 'inset 0 0 0 1.5px var(--cth-ink-500)' : 'inset 0 0 0 1px var(--cth-ink-100)',
+  boxShadow: active ? 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)' : 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   fontFamily: 'var(--cth-font-ui)', fontSize: 12,
   color: 'var(--cth-ink-900)', cursor: 'pointer', border: 'none'
 });
 const ossGroupHead: CSSProperties = {
-  fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
+  fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '12px',
   color: 'var(--cth-ink-500)', textTransform: 'uppercase', marginBottom: 4
 };
 const ossLink: CSSProperties = { color: 'var(--cth-ink-900)', textDecoration: 'underline', cursor: 'pointer' };
@@ -534,7 +534,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
               <div style={{
                 padding: '6px 10px',
                 background: 'var(--cth-lemon-light, #fdf3cf)',
-                boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                 fontSize: 12,
                 color: 'var(--cth-ink-900)',
                 display: 'flex', flexDirection: 'column', gap: 2
@@ -555,8 +555,8 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                           fontFamily: 'var(--cth-font-mono)',
                           fontSize: 12,
                           padding: '0 4px',
-                          background: 'var(--cth-paprika-light, #f6d3c4)',
-                          boxShadow: 'inset 0 0 0 1px var(--cth-paprika-700, #b3502e)',
+                          background: 'var(--cth-coral-light)',
+                          boxShadow: 'inset 0 0 0 1px var(--cth-coral), 2px 2px 0 0 var(--cth-coral)',
                           color: 'var(--cth-ink-900)'
                         }}
                       >
@@ -576,7 +576,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                           fontSize: 12,
                           padding: '0 4px',
                           background: 'var(--cth-mint-light, #d0f0e0)',
-                          boxShadow: 'inset 0 0 0 1px var(--cth-mint-700, #1f7a4d)',
+                          boxShadow: 'inset 0 0 0 1px var(--cth-mint), 2px 2px 0 0 var(--cth-mint)',
                           color: 'var(--cth-ink-900)'
                         }}
                       >
@@ -601,7 +601,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                             <code key={id} style={{
                               fontFamily: 'var(--cth-font-mono)', fontSize: 12, padding: '0 4px',
                               background: 'var(--cth-sky-light, #d0e8f8)',
-                              boxShadow: 'inset 0 0 0 1px var(--cth-sky-700, #1f5a8a)',
+                              boxShadow: 'inset 0 0 0 1px var(--cth-sky), 2px 2px 0 0 var(--cth-sky)',
                               color: 'var(--cth-ink-900)'
                             }}>{id}</code>
                           ))}
@@ -613,8 +613,8 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                           {consent.map((id) => (
                             <code key={id} style={{
                               fontFamily: 'var(--cth-font-mono)', fontSize: 12, padding: '0 4px',
-                              background: 'var(--cth-paprika-light, #f6d3c4)',
-                              boxShadow: 'inset 0 0 0 1px var(--cth-paprika-700, #b3502e)',
+                              background: 'var(--cth-coral-light)',
+                              boxShadow: 'inset 0 0 0 1px var(--cth-coral), 2px 2px 0 0 var(--cth-coral)',
                               color: 'var(--cth-ink-900)'
                             }}>{id}</code>
                           ))}
@@ -650,7 +650,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                       }}
                     >
                       <span style={{
-                        fontFamily: 'var(--cth-font-display)', fontSize: 9, lineHeight: '13px',
+                        fontFamily: 'var(--cth-font-display)', fontSize: 12, lineHeight: '13px',
                         color: 'var(--cth-ink-900)', textTransform: 'uppercase',
                         display: 'flex', alignItems: 'baseline', gap: 6
                       }}>
@@ -745,7 +745,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                           title={tr('addAgent.addProjectTitle')}
                           style={{
                             flexShrink: 0, padding: '2px 8px 1px', border: 'none', cursor: 'pointer',
-                            background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                            background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                             fontFamily: 'var(--cth-font-ui)', fontSize: 12, color: 'var(--cth-ink-900)',
                             display: 'inline-flex', alignItems: 'center', gap: 4
                           }}
@@ -826,7 +826,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                           style={{
                             alignSelf: 'flex-start', marginTop: 2,
                             padding: '2px 8px 1px', border: 'none', cursor: 'pointer',
-                            background: 'var(--cth-mint-light)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                            background: 'var(--cth-mint-light)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                             fontFamily: 'var(--cth-font-ui)', fontSize: 12, color: 'var(--cth-ink-900)',
                             display: 'inline-flex', alignItems: 'center', gap: 4
                           }}
@@ -1042,7 +1042,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                             style={{
                               padding: '3px 8px 1px',
                               background: 'var(--cth-cream-100)',
-                              boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                              boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                               fontFamily: 'var(--cth-font-ui)', fontSize: 12,
                               color: 'var(--cth-ink-900)', cursor: 'pointer', border: 'none'
                             }}
@@ -1081,7 +1081,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
               <div style={{
                 padding: '6px 10px',
                 background: 'var(--cth-coral-light)',
-                boxShadow: 'inset 0 0 0 1px var(--cth-coral)',
+                boxShadow: 'inset 0 0 0 1px var(--cth-coral), 2px 2px 0 0 var(--cth-coral)',
                 fontSize: 13,
                 color: 'var(--cth-ink-900)'
               }}>
@@ -1093,7 +1093,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
             <div style={{
               padding: '8px 10px',
               background: 'var(--cth-cream-100)',
-              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
               display: 'flex', flexDirection: 'column', gap: 6
             }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
@@ -1106,7 +1106,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                     flexShrink: 0,
                     padding: '2px 8px 1px', border: 'none', cursor: 'pointer',
                     background: showHirePrompt ? 'var(--cth-lemon-light)' : 'var(--cth-cream-200)',
-                    boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                    boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                     fontFamily: 'var(--cth-font-ui)', fontSize: 12, color: 'var(--cth-ink-900)'
                   }}
                 >
@@ -1170,7 +1170,7 @@ const inputStyle: React.CSSProperties = {
   padding: '6px 8px 4px',
   background: 'var(--cth-paper-100)',
   border: 'none',
-  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   fontFamily: 'var(--cth-font-ui)',
   fontSize: 16,
   color: 'var(--cth-ink-900)',
@@ -1182,7 +1182,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
     <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <span style={{
         fontFamily: 'var(--cth-font-display)',
-        fontSize: 8, lineHeight: '12px',
+        fontSize: 11, lineHeight: '12px',
         color: 'var(--cth-ink-700)',
         textTransform: 'uppercase'
       }}>{label}</span>
