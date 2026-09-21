@@ -156,6 +156,23 @@ export const OFFICE_THEME: ThemeConfig = {
     'desk-chief-architect', 'desk-product-manager', 'desk-team-lead',
     'desk-backend-engineer', 'desk-ui-ux-expert', 'desk-data-engineer',
     'desk-project-manager', 'desk-market-researcher', 'desk-agent-organizer',
+    // v0.6.0: the open-plan floor (tools/redesign-office-map.mjs). The old
+    // list ran to pc-119 against a map that stamped ~120 desks edge-to-edge
+    // over a 58-row hall; the floor is now a real plan — corridor spine, three
+    // desk rows of twelve with three-wide aisles between clusters, a breakout
+    // band, and a break room / lobby / lounge along the bottom. 36 desks here
+    // + the 16 in the preserved original room = 52 seats.
+    //
+    // Seat ORDER is claim order (seat 0 is desk-ceo, the god's room), so the
+    // original room fills first and the open plan takes the overflow.
+    // pc-7..pc-16 are the two top-right rooms (conference + focus), then the
+    // open plan, so the building fills top-down; pc-53/54 are the two
+    // touchdown desks in the bottom-right lounge, claimed last.
+    'pc-7', 'pc-8', 'pc-9', 'pc-10', 'pc-11', 'pc-12', 'pc-13', 'pc-14', 'pc-15', 'pc-16',
+    'pc-17', 'pc-18', 'pc-19', 'pc-20', 'pc-21', 'pc-22', 'pc-23', 'pc-24', 'pc-25', 'pc-26',
+    'pc-27', 'pc-28', 'pc-29', 'pc-30', 'pc-31', 'pc-32', 'pc-33', 'pc-34', 'pc-35', 'pc-36',
+    'pc-37', 'pc-38', 'pc-39', 'pc-40', 'pc-41', 'pc-42', 'pc-43', 'pc-44', 'pc-45', 'pc-46',
+    'pc-47', 'pc-48', 'pc-49', 'pc-50', 'pc-51', 'pc-52', 'pc-53', 'pc-54',
   ],
   cafeSeatNames: ['cafe-seat-1', 'cafe-seat-2', 'cafe-seat-3', 'cafe-seat-4'],
   cafeStands: [

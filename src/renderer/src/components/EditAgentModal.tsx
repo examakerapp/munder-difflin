@@ -143,9 +143,11 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
                         style={{
                           padding: 4,
                           background: active ? `var(--cth-${accent}-light)` : 'var(--cth-cream-100)',
+                          // v0.5.x: a flat offset shadow matching the ring color,
+                          // same border=shadow rule as every panel/button now.
                           boxShadow: active
-                            ? 'inset 0 0 0 1.5px var(--cth-ink-500)'
-                            : 'inset 0 0 0 1px var(--cth-ink-100)',
+                            ? 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)'
+                            : 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                           cursor: 'pointer', border: 'none', width: 52,
                           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2
                         }}
@@ -176,8 +178,8 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
                         width: 28, height: 28,
                         background: `var(--cth-${a})`,
                         boxShadow: accent === a
-                          ? 'inset 0 0 0 1.5px var(--cth-ink-500), 0 0 0 2px var(--cth-ink-900)'
-                          : 'inset 0 0 0 1px var(--cth-ink-300)',
+                          ? 'inset 0 0 0 1.5px var(--cth-ink-500), 0 0 0 2px var(--cth-ink-900), 2px 2px 0 0 var(--cth-ink-900)'
+                          : 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
                         cursor: 'pointer', border: 'none'
                       }}
                     />
@@ -201,8 +203,8 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
                           padding: '3px 8px 1px',
                           background: active ? `var(--cth-${accent}-light)` : 'var(--cth-cream-100)',
                           boxShadow: active
-                            ? 'inset 0 0 0 1.5px var(--cth-ink-500)'
-                            : 'inset 0 0 0 1px var(--cth-ink-100)',
+                            ? 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)'
+                            : 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                           fontFamily: 'var(--cth-font-ui)', fontSize: 12,
                           color: 'var(--cth-ink-900)', cursor: 'pointer', border: 'none',
                           display: 'inline-flex', alignItems: 'center', gap: 6
@@ -236,8 +238,8 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
                             padding: '3px 8px 1px',
                             background: active ? `var(--cth-${accent}-light)` : 'var(--cth-cream-100)',
                             boxShadow: active
-                              ? 'inset 0 0 0 1.5px var(--cth-ink-500)'
-                              : 'inset 0 0 0 1px var(--cth-ink-100)',
+                              ? 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)'
+                              : 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                             fontFamily: 'var(--cth-font-ui)', fontSize: 12,
                             color: 'var(--cth-ink-900)', cursor: 'pointer', border: 'none'
                           }}
@@ -297,7 +299,7 @@ const inputStyle: CSSProperties = {
   padding: '6px 8px 4px',
   background: 'var(--cth-paper-100)',
   border: 'none',
-  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   fontFamily: 'var(--cth-font-ui)',
   fontSize: 16,
   color: 'var(--cth-ink-900)',
@@ -319,7 +321,7 @@ function Section({
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <span style={{
           fontFamily: 'var(--cth-font-display)',
-          fontSize: 9, lineHeight: '12px',
+          fontSize: 12, lineHeight: '12px',
           color: 'var(--cth-ink-900)',
           textTransform: 'uppercase'
         }}>{label}</span>
@@ -335,7 +337,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
     <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <span style={{
         fontFamily: 'var(--cth-font-display)',
-        fontSize: 8, lineHeight: '12px',
+        fontSize: 11, lineHeight: '12px',
         color: 'var(--cth-ink-700)',
         textTransform: 'uppercase'
       }}>{label}</span>

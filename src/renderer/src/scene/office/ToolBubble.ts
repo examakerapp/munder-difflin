@@ -1,4 +1,5 @@
 import { Container, Graphics, Text } from 'pixi.js';
+import { colors, hex } from '@/design/tokens';
 
 // Speech bubble shown above a character: "<icon> <target>" (e.g. "> App.tsx").
 // Ported from shahar061/the-office (office/characters/ToolBubble.ts); tool icon
@@ -23,9 +24,13 @@ const PADDING_X = 6;
 const PADDING_Y = 3;
 const CORNER_RADIUS = 4;
 const MAX_WIDTH = 140;
-const BG_COLOR = 0x1a1320; // ink-900
+// v0.5.0: both were hardcoded literals (the OLD ink-900/cream-50 values) that
+// had silently drifted from the real tokens — wired to the tokens directly so
+// they track any future palette change instead of freezing at whatever hex
+// happened to be current when someone typed it in.
+const BG_COLOR = colors.ink[900];
 const BG_ALPHA = 0.95;     // near-opaque: thin text over a busy floor was hard to read
-const TEXT_COLOR = '#fffdf5';
+const TEXT_COLOR = hex(colors.cream[50]);
 const FONT_SIZE = 12;
 const RENDER_SCALE = 0.5; // render at 2x, scale down for crispness
 const OFFSET_Y = -36;

@@ -135,8 +135,19 @@ export function acquireTerminal(ptyId: string, theme?: ThemeMap, fontSize = 14):
     fontFamily: '"JetBrains Mono", "SF Mono", Menlo, monospace',
     fontSize,
     lineHeight: 1.0,
-    cursorBlink: true,
+    // v0.6.0: cursorBlink OFF, not just re-themed. Reported as an invisible/
+    // stuck cursor, worse on busy agents (auto-mode, frequent output) but not
+    // exclusive to them — consistent with xterm's blink timer getting reset
+    // by rapid writes and landing in its "off" phase far more often than "on"
+    // on a chatty pty, so the cursor read as missing (or frozen wherever it
+    // happened to be mid-blink) far more than it read as blinking. A static,
+    // always-rendered block trades the blink animation for a cursor that is
+    // simply always visible, which is what was actually being asked for.
+    cursorBlink: false,
     cursorStyle: 'block',
+    // Also covers the (separate) case where the terminal genuinely isn't
+    // focused — xterm's default there is a near-invisible hollow outline.
+    cursorInactiveStyle: 'block',
     scrollback: 100000,
     // Guarantee legible text no matter what colors a running program sets.
     // When a program paints a coloured cell background (e.g. a git-diff add line
@@ -585,6 +596,18 @@ function leaseWebglRenderer(entry: TerminalEntry): void {
   // (xterm.js has no bidi: xtermjs/xterm.js#701). Skipping the lease IS the
   // feature, not a fallback.
   if (isArabicTerminalEnabled()) return;
+  // DIAGNOSTIC DISABLE (2026-09-18): reported "inverted"/garbled highlight
+  // blocks over wrapped, reverse-video-styled CLI output, confirmed present
+  // in our embedded terminal and absent from a real terminal running the
+  // exact same content side by side — i.e. specific to our render path, not
+  // the CLI's own output. WebGL-renderer decoration/reverse-video bugs are a
+  // known category in xterm.js's @xterm/addon-webgl. This falls back to the
+  // DOM renderer (slower on very large/fast-scrolling output, otherwise
+  // visually identical) to test that hypothesis directly. If the artifact is
+  // gone after this, the hypothesis was right — if it's still there, flip
+  // this flag back to false and look elsewhere.
+  const DIAGNOSTIC_DISABLE_WEBGL = true;
+  if (DIAGNOSTIC_DISABLE_WEBGL) return;
   try {
     const webgl = new WebglAddon();
     webgl.onContextLoss(() => {

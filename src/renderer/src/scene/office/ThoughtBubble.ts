@@ -1,5 +1,5 @@
 import { Container, Graphics, Text } from 'pixi.js';
-import { colors } from '@/design/tokens';
+import { colors, hex } from '@/design/tokens';
 import { toolIcon } from './ToolBubble';
 
 // A comic "thought cloud" pinned above an avatar's head showing what it's doing
@@ -18,7 +18,10 @@ const CORNER_RADIUS = 5;
 const MAX_WIDTH = 150;
 const FILL_COLOR = colors.cream[50];   // light cloud
 const OUTLINE_COLOR = colors.ink[900];
-const TEXT_COLOR = '#3d2e4a';           // ink-700
+// v0.5.0: was a hardcoded literal hex labeled "ink-700" that didn't actually
+// reference the token — it had silently drifted from the real value already.
+// Wired to the real token so it can never drift again.
+const TEXT_COLOR = hex(colors.ink[700]);
 const FONT_SIZE = 12;
 const RENDER_SCALE = 0.5;               // render at 2x, scale down for crispness
 const OFFSET_Y = -38;                   // a touch higher than the tool bubble

@@ -18,6 +18,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '@/components/Icon';
+import { PixelPanel } from '@/components/PixelPanel';
 import { useStore } from '@/store/store';
 
 /** Mirrors the `window.cth.onRealtimeCompletion` payload (preload). `summary` is the
@@ -99,18 +100,11 @@ export function CompletionToast(): JSX.Element | null {
       }}
     >
       {toasts.map((t) => (
-        <div
+        <PixelPanel
           key={t.key}
           role="status"
-          style={{
-            pointerEvents: 'auto',
-            background: 'var(--cth-paper-100)',
-            boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), 4px 4px 0 0 var(--cth-ink-900)',
-            padding: 12,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6
-          }}
+          variant="dialog"
+          style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', gap: 6, padding: 12 }}
         >
           <div
             style={{
@@ -118,7 +112,7 @@ export function CompletionToast(): JSX.Element | null {
               alignItems: 'center',
               gap: 8,
               fontFamily: 'var(--cth-font-display)',
-              fontSize: 8,
+              fontSize: 11,
               lineHeight: '12px',
               color: 'var(--cth-ink-900)',
               textTransform: 'uppercase'
@@ -135,7 +129,7 @@ export function CompletionToast(): JSX.Element | null {
                 background: 'transparent',
                 cursor: 'pointer',
                 fontFamily: 'var(--cth-font-display)',
-                fontSize: 10,
+                fontSize: 13,
                 lineHeight: '10px',
                 color: 'var(--cth-ink-700)',
                 padding: 0
@@ -159,7 +153,7 @@ export function CompletionToast(): JSX.Element | null {
               {t.objective}
             </div>
           )}
-        </div>
+        </PixelPanel>
       ))}
     </div>
   );

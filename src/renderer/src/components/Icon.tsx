@@ -7,7 +7,7 @@ export type IconName =
   | 'gear' | 'plus' | 'x' | 'check' | 'arrow-right' | 'pause' | 'play'
   | 'bell' | 'folder' | 'terminal' | 'code' | 'web' | 'mcp' | 'sparkle'
   | 'expand' | 'minimize' | 'clock' | 'mic' | 'ledger' | 'info' | 'sidebar'
-  | 'image' | 'edit' | 'git';
+  | 'image' | 'edit' | 'git' | 'chat';
 
 interface IconDef {
   ink: string;     // primary color path d
@@ -122,6 +122,14 @@ const paths: Record<IconName, IconDef> = {
   ledger: {
     accentColor: 'var(--cth-lemon)',
     ink:   'M2 1h12v14H2V1zM3 2v12h10V2H3zM5 4h6v1H5zM5 7h6v1H5zM5 10h4v1H5z'
+  },
+  // Speech bubble with two text lines and a stepped tail. Same hairline outline
+  // weight as ledger/terminal, which it sits beside in the tab row: outer rect,
+  // then the inner subpath is cut out by fill-rule: evenodd, then the lines and
+  // the tail are separate subpaths and so fill again.
+  chat: {
+    accentColor: 'var(--cth-lilac)',
+    ink:   'M1 2h14v10H1V2zM2 3v8h12V3H2zM4 5h8v1H4zM4 8h5v1H4zM3 12h3v1H3zM3 13h2v1H3zM3 14h1v1H3z'
   },
   // Microphone: a solid capsule head, an open cradle, a stem, and a base.
   mic: {

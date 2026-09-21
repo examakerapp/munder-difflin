@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PixelPanel } from './PixelPanel';
 import { PixelBadge } from './PixelBadge';
 import { PixelButton } from './PixelButton';
 import { SpritePortrait } from './SpritePortrait';
 import { PtyTerminalView } from './PtyTerminalView';
 import { MessageQueueComposer } from './MessageQueueComposer';
 import { TasksKanban } from './TasksKanban';
+import { HiveChat } from './HiveChat';
+import { useAskCount } from '@/hooks/useAskCount';
 import { AskMeTab } from './AskMeTab';
 import { TriggersTab } from './triggers/TriggersTab';
 import { TriggerHistoryTab } from './triggers/TriggerHistoryTab';
@@ -46,7 +47,7 @@ import { useRtl } from '@/i18n/useDirection';
 // Both the AskMe (#human) tab and the Triggers tab live here. Triggers replaced
 // the old Schedules tab: schedules are now one of four trigger types, and the
 // whole surface lives in ./triggers (see src/shared/triggers.ts for the contract).
-type CCTab = 'terminal' | 'floor' | 'tasks' | 'human' | 'triggers' | 'trigger-history'
+type CCTab = 'terminal' | 'chat' | 'floor' | 'tasks' | 'human' | 'triggers' | 'trigger-history'
   | 'memory' | 'graph' | 'activity' | 'skills' | 'workers';
 
 /** Fallback denominator for the per-agent token meter when no floor token budget
@@ -65,18 +66,28 @@ interface GHIssue {
 }
 
 /** Canonical tab order. Not every entry is always shown — see `visibleTabs`. */
-const TABS: { key: CCTab; labelKey: string; icon: Parameters<typeof Icon>[0]['name'] }[] = [
-  { key: 'terminal', labelKey: 'commandCenter.tabs.terminal', icon: 'terminal' },
-  { key: 'floor', labelKey: 'commandCenter.tabs.floor', icon: 'mcp' },
-  { key: 'tasks', labelKey: 'commandCenter.tabs.tasks', icon: 'check' },
-  { key: 'human', labelKey: 'commandCenter.tabs.human', icon: 'bell' },
-  { key: 'triggers', labelKey: 'commandCenter.tabs.triggers', icon: 'clock' },
-  { key: 'trigger-history', labelKey: 'commandCenter.tabs.history', icon: 'ledger' },
-  { key: 'memory', labelKey: 'commandCenter.tabs.memory', icon: 'sparkle' },
-  { key: 'graph', labelKey: 'commandCenter.tabs.graph', icon: 'web' },
-  { key: 'activity', labelKey: 'commandCenter.tabs.activity', icon: 'bell' },
-  { key: 'skills', labelKey: 'commandCenter.tabs.skills', icon: 'sparkle' },
-  { key: 'workers', labelKey: 'commandCenter.tabs.workers', icon: 'gear' }
+// v0.4.7: grouped for scannability (UI audit) — was one flat list of 11 equally-
+// weighted tabs with two icon collisions (bell used by both `human` and
+// `activity`; sparkle used by both `memory` and `skills`), so two different
+// destinations were indistinguishable by glyph alone. Each tab now carries a
+// `group`, rendered with a gap + label between groups (see visibleTabs below);
+// `human` moved bell → mic (asking is the mic icon everywhere else in the app)
+// and `skills` moved sparkle → folder (a Claude Skill IS literally a folder),
+// both reassigned from icons already in the shared set — no new glyphs drawn.
+const TAB_GROUPS = ['work', 'automate', 'insights', 'configure'] as const;
+const TABS: { key: CCTab; labelKey: string; icon: Parameters<typeof Icon>[0]['name']; group: typeof TAB_GROUPS[number] }[] = [
+  { key: 'terminal', labelKey: 'commandCenter.tabs.terminal', icon: 'terminal', group: 'work' },
+  { key: 'chat', labelKey: 'commandCenter.tabs.chat', icon: 'chat', group: 'work' },
+  { key: 'tasks', labelKey: 'commandCenter.tabs.tasks', icon: 'check', group: 'work' },
+  { key: 'human', labelKey: 'commandCenter.tabs.human', icon: 'mic', group: 'work' },
+  { key: 'triggers', labelKey: 'commandCenter.tabs.triggers', icon: 'clock', group: 'automate' },
+  { key: 'trigger-history', labelKey: 'commandCenter.tabs.history', icon: 'ledger', group: 'automate' },
+  { key: 'floor', labelKey: 'commandCenter.tabs.floor', icon: 'mcp', group: 'insights' },
+  { key: 'activity', labelKey: 'commandCenter.tabs.activity', icon: 'bell', group: 'insights' },
+  { key: 'graph', labelKey: 'commandCenter.tabs.graph', icon: 'web', group: 'insights' },
+  { key: 'memory', labelKey: 'commandCenter.tabs.memory', icon: 'sparkle', group: 'insights' },
+  { key: 'skills', labelKey: 'commandCenter.tabs.skills', icon: 'folder', group: 'configure' },
+  { key: 'workers', labelKey: 'commandCenter.tabs.workers', icon: 'gear', group: 'configure' }
 ];
 
 /** @param fullscreen this instance IS the fullscreen overlay, so it owns the pty
@@ -86,6 +97,7 @@ const TABS: { key: CCTab; labelKey: string; icon: Parameters<typeof Icon>[0]['na
 export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent; fullscreen?: boolean }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<CCTab>('terminal');
+  const askCount = useAskCount();
   // The trigger-history ledger has nothing to say until an outside party can
   // reach us, so its tab appears only once an org key or a webhook exists. This
   // is the first config-gated tab in the panel: TABS stays the canonical order
@@ -149,20 +161,25 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
   };
 
   return (
-    <PixelPanel
-      variant="default"
-      noPadding
-      style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 0, overflow: 'hidden' }}
+    // v0.6.0: no longer a PixelPanel — the whole right-side column (header,
+    // tabs, terminal, composer) sits directly on the app background,
+    // edge-to-edge, per direct request ("not inside a card... directly on
+    // the background, end to end"). The internal section dividers
+    // (borderBottom on the header/tab-bar below) still separate the parts;
+    // only the OUTER card border + offset shadow is gone.
+    <div
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: 'var(--cth-cream-50)' }}
     >
-      {/* Header */}
+      {/* Header — v0.6.0: more vertical padding (6px -> 10px) for breathing
+          room around the avatar/buttons, per direct request. */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        padding: '6px 8px', background: 'var(--cth-cream-100)',
-        borderBottom: '1px solid var(--cth-ink-700)', flexShrink: 0
+        padding: '10px 12px', background: 'var(--cth-cream-50)',
+        borderBottom: '1px solid var(--cth-ink-300)', flexShrink: 0
       }}>
         <div style={{
           width: 32, height: 32, background: `var(--cth-${agent.accent}-light)`,
-          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden', flexShrink: 0
         }}>
           <SpritePortrait character={agent.character} scale={1} />
@@ -173,7 +190,10 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
             wide buttons — everything here is single-line by construction. */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontFamily: 'var(--cth-font-display)', fontSize: 10, lineHeight: '14px', color: 'var(--cth-ink-900)',
+            // v0.6.0: pixel face restored on direct request — --cth-font-display
+            // now resolves to the UI font everywhere else, so this title
+            // reaches the literal pixel stack instead.
+            fontFamily: 'var(--cth-font-pixel)', fontSize: 10, lineHeight: '14px', color: 'var(--cth-ink-900)',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
           }}>{t('commandCenter.title')}</div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 1, minWidth: 0 }}>
@@ -218,6 +238,11 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
               className="cth-tip cth-tip-wrap"
               data-tip={t('commandCenter.ideTitle')}
               aria-label={t('commandCenter.openIdeAria')}
+              // No font override: this is a BUTTON, so it takes PixelButton's
+              // own face like every other one. It briefly carried the pixel
+              // display face — that call was made for the panel TITLE beside
+              // it and copied down here, where it just made one button in a
+              // pair look unlike its neighbour.
               style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
             >
               <Icon name="code" /> {t('commandCenter.ide')}
@@ -257,12 +282,24 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
         // global.css already hides that scrollbar.
         flexWrap: fullscreen ? 'nowrap' : 'wrap',
         overflowX: fullscreen ? 'auto' : 'visible',
-        padding: '6px 8px', background: 'var(--cth-cream-100)',
-        borderBottom: '1px solid var(--cth-ink-700)', flexShrink: 0
+        // v0.6.0: more vertical padding (6px -> 10px) around the tab pills,
+        // per direct request.
+        padding: '10px 8px', background: 'var(--cth-cream-50)',
+        borderBottom: '1px solid var(--cth-ink-300)', flexShrink: 0
       }}>
-        {visibleTabs.map((tabDef) => (
+        {visibleTabs.map((tabDef, i) => (
+          <Fragment key={tabDef.key}>
+            {/* A hairline between groups (work / automate / insights / configure)
+                instead of one flat run of 11 equal-weight tabs — the audit's
+                "no grouping" finding. 8px each side keeps the divider on the
+                app's own spacing scale rather than an arbitrary gap. */}
+            {i > 0 && tabDef.group !== visibleTabs[i - 1].group && (
+              <div aria-hidden="true" style={{
+                width: 1, alignSelf: 'stretch', margin: '0 4px',
+                background: 'var(--cth-ink-100)', flexShrink: 0
+              }} />
+            )}
           <button
-            key={tabDef.key}
             onClick={() => setTab(tabDef.key)}
             style={{
               whiteSpace: 'nowrap',
@@ -271,13 +308,22 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
               // squashed tab is unreadable — overflow into the scroll instead).
               flex: '1 0 auto',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-              padding: '4px 8px 3px', border: 'none', cursor: 'pointer',
-              background: tab === tabDef.key ? `var(--cth-${agent.accent})` : 'var(--cth-cream-200)',
+              // v0.6.0: rounded pill instead of a hard-edged segment, matching the
+              // Composer design system's tab-bar treatment — shape only, the
+              // grouping/accent/on-accent logic below is untouched.
+              padding: '6px 12px', border: 'none', cursor: 'pointer',
+              borderRadius: 'var(--cth-radius-pill)',
+              // v0.6.0: brand orange, not the agent's own accent — the mockup
+              // uses one accent for active/selected chrome regardless of which
+              // agent is open; per-agent color stays scoped to identity (the
+              // avatar tile, the BOSS-adjacent surface) rather than nav state.
+              background: tab === tabDef.key ? 'var(--cth-primary)' : 'var(--cth-cream-200)',
               // The selected tab is filled with the agent's accent, which is a
               // LIGHT colour in both themes. ink-900 flips to near-white in dark
               // mode, so the active tab's label was pale-on-pale — the one tab
               // you most need to read. On-accent text is dark in both themes.
-              color: tab === tabDef.key ? 'var(--cth-on-accent)' : 'var(--cth-ink-900)',
+              color: tab === tabDef.key ? 'var(--cth-on-primary)' : 'var(--cth-ink-900)',
+              fontWeight: tab === tabDef.key ? 600 : 400,
               boxShadow: tab === tabDef.key
                 ? 'inset 0 0 0 1px var(--cth-ink-300)'
                 : 'inset 0 0 0 1px var(--cth-ink-100)',
@@ -285,7 +331,26 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
             }}
           >
             <Icon name={tabDef.icon} /> {t(tabDef.labelKey)}
+            {/* Unanswered-ask count. Only ever on the ASK ME tab, and hidden at
+                zero so the strip is unchanged when nothing is waiting. This is
+                the one piece of nav that has to be legible without being
+                selected, so it keeps its own contrast rather than inheriting
+                the pill's on-accent colour. */}
+            {tabDef.key === 'human' && askCount > 0 && (
+              <span
+                aria-label={t('commandCenter.asksWaiting', { count: askCount })}
+                style={{
+                  minWidth: 16, height: 16, padding: '0 4px', boxSizing: 'border-box',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  borderRadius: 'var(--cth-radius-pill)',
+                  background: tab === tabDef.key ? 'var(--cth-on-primary)' : 'var(--cth-primary)',
+                  color: tab === tabDef.key ? 'var(--cth-primary)' : 'var(--cth-on-primary)',
+                  fontSize: 10, fontWeight: 700, lineHeight: 1
+                }}
+              >{askCount}</span>
+            )}
           </button>
+          </Fragment>
         ))}
       </div>
 
@@ -310,7 +375,12 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
                   }}
                   onToggleFullscreen={() => setFullscreen(fullscreen ? null : agent.id)}
                   fullscreen={fullscreen}
-                  embedded={!fullscreen}
+                  // v0.6.0: always embedded, in both docked and fullscreen —
+                  // the whole panel is flush/edge-to-edge now (no outer
+                  // card), so the terminal's own border+padding used to read
+                  // as a second, stacked outline right under the tab-bar's
+                  // divider in focus mode specifically.
+                  embedded
                 />
               </div>
               <MessageQueueComposer agent={agent} />
@@ -333,11 +403,13 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
             onJumpToMemory={(id) => { setSelectedMemoryAgent(id); setTab('memory'); }}
           />
         )}
+        {/* No peerId: the god's view is the whole floor's conversation. */}
+        {tab === 'chat' && <HiveChat />}
         {tab === 'activity' && <ActivityTab />}
         {tab === 'skills' && <SkillsTab agentCwd={agent.cwd} />}
         {tab === 'workers' && <WorkersTab />}
       </div>
-    </PixelPanel>
+    </div>
   );
 }
 
@@ -640,7 +712,7 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
     <Scroll>
       <Section title={t('commandCenter.dispatchViaMichael', { godName: godName.toUpperCase() })}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-          <span style={{ fontFamily: 'var(--cth-font-display)', fontSize: 8, color: 'var(--cth-ink-500)', flexShrink: 0 }}>
+          <span style={{ fontFamily: 'var(--cth-font-display)', fontSize: 11, color: 'var(--cth-ink-500)', flexShrink: 0 }}>
             {t('commandCenter.suggestedOwner')}
           </span>
           <Select value={dispatchTo} onChange={setDispatchTo}>
@@ -699,12 +771,12 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
           <div key={a.id} style={{
             display: 'flex', flexDirection: 'column', gap: 4,
             padding: 6, marginBottom: 6,
-            background: armed ? 'var(--cth-coral-light)' : 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+            background: armed ? 'var(--cth-coral-light)' : 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{
                 width: 24, height: 24, background: `var(--cth-${a.accent}-light)`,
-                boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+                boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
                 display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden', flexShrink: 0
               }}>
                 <SpritePortrait character={a.character} scale={1} />
@@ -737,7 +809,7 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
               {lastTool[a.id] && (
                 <span style={{
                   fontSize: 10, lineHeight: '14px', padding: '0 5px', flexShrink: 0,
-                  background: 'var(--cth-paper-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)', color: 'var(--cth-ink-700)'
+                  background: 'var(--cth-paper-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)', color: 'var(--cth-ink-700)'
                 }}>{lastTool[a.id]}</span>
               )}
               <span style={{ fontFamily: 'var(--cth-font-mono)', fontSize: 10, color: 'var(--cth-ink-300)', flexShrink: 0 }}>{t('commandCenter.budget')}</span>
@@ -748,7 +820,7 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
                   limit: denom.toLocaleString(),
                   note: hasAgentCap ? t('commandCenter.agentLimit') : t('commandCenter.floorBudget')
                 })}
-                style={{ width: 96, height: 8, background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)', flexShrink: 0 }}
+                style={{ width: 96, height: 8, background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)', flexShrink: 0 }}
               >
                 <div style={{ width: `${pct}%`, height: '100%', background: meterColor }} />
               </div>
@@ -776,7 +848,7 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
                         limit: a.contextLimit!.toLocaleString(),
                         pct: cpct
                       })}
-                      style={{ width: 96, height: 8, background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)', flexShrink: 0 }}
+                      style={{ width: 96, height: 8, background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)', flexShrink: 0 }}
                     >
                       <div style={{ width: `${cpct}%`, height: '100%', background: ccolor }} />
                     </div>
@@ -911,6 +983,15 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
                 >
                   {restarting === a.id ? t('common.restarting') : t('commandCenter.apply')}
                 </PixelButton>
+                {/* A config change ("apply") and a process kill+respawn ("restart
+                    & continue") used to sit as two identical buttons with nothing
+                    between them — no visual cue that one is a much bigger action
+                    than the other. Same hairline-divider pattern as the tab groups
+                    above, not a new one-off treatment. */}
+                <div aria-hidden="true" style={{
+                  width: 1, alignSelf: 'stretch', margin: '0 4px',
+                  background: 'var(--cth-ink-100)', flexShrink: 0
+                }} />
                 {/* Redraw a garbled terminal without losing the thread (resume the
                     SAME engine+model). Kept here since the god has no per-agent row above. */}
                 <PixelButton
@@ -931,7 +1012,7 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
         {/* Fleet summary band */}
         <div style={{
           display: 'flex', gap: 14, marginTop: 2, padding: '6px 8px',
-          background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+          background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
           fontFamily: 'var(--cth-font-mono)', fontSize: 11, color: 'var(--cth-ink-900)', flexWrap: 'wrap'
         }}>
           <span>Σ <strong>{fmtTokens(sumTokens)}</strong> {t('costHud.tok')}</span>
@@ -980,7 +1061,7 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
             {issuesError && (
               <div style={{
                 fontSize: 12, color: 'var(--cth-ink-700)', marginBottom: 6,
-                padding: 6, background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+                padding: 6, background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
                 wordBreak: 'break-word'
               }}>{issuesError}</div>
             )}
@@ -989,7 +1070,7 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
               <div key={issue.number} style={{
                 display: 'flex', flexDirection: 'column', gap: 4,
                 padding: 6, marginBottom: 6,
-                background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+                background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
                   <span style={{ fontSize: 12, color: 'var(--cth-ink-900)', flex: 1, wordBreak: 'break-word' }}>
@@ -1004,7 +1085,7 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
                     {issue.labels.map((label) => (
                       <span key={label} style={{
                         fontSize: 10, lineHeight: '14px', padding: '0 5px',
-                        background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+                        background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
                         color: 'var(--cth-ink-700)'
                       }}>{label}</span>
                     ))}
@@ -1034,7 +1115,7 @@ function ArchivedSection() {
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 4,
           padding: '2px 8px 1px', border: 'none', cursor: 'pointer',
-          background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+          background: 'var(--cth-cream-200)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
           fontFamily: 'var(--cth-font-ui)', fontSize: 12, color: 'var(--cth-ink-900)',
           marginBottom: open ? 6 : 0
         }}
@@ -1043,11 +1124,11 @@ function ArchivedSection() {
         <div key={a.id} style={{
           display: 'flex', alignItems: 'center', gap: 8,
           padding: 6, marginBottom: 6, opacity: 0.7,
-          background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+          background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)'
         }}>
           <div style={{
             width: 24, height: 24, background: `var(--cth-${a.accent}-light)`,
-            boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+            boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
             display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden', flexShrink: 0
           }}>
             <SpritePortrait character={a.character} scale={1} />
@@ -1230,13 +1311,13 @@ function TokenLimitEditor({ value, onSet }: { value?: number; onSet: (tokens: nu
         placeholder={t('common.tokens')}
         style={{
           width: 84, padding: '2px 4px', background: 'var(--cth-paper-100)', border: 'none',
-          boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)', fontFamily: 'var(--cth-font-mono)',
+          boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)', fontFamily: 'var(--cth-font-mono)',
           fontSize: 11, color: 'var(--cth-ink-900)', outline: 'none'
         }}
       />
       <button
         onMouseDown={(e) => e.preventDefault()} onClick={commit} title={t('commandCenter.saveLimit')}
-        style={{ flexShrink: 0, padding: '1px 5px', border: 'none', cursor: 'pointer', background: 'var(--cth-mint)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)', fontSize: 11, color: 'var(--cth-ink-900)' }}
+        style={{ flexShrink: 0, padding: '1px 5px', border: 'none', cursor: 'pointer', background: 'var(--cth-mint)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)', fontSize: 11, color: 'var(--cth-ink-900)' }}
       >✓</button>
     </span>
   );
@@ -1305,7 +1386,7 @@ function Scroll({ children }: { children: React.ReactNode }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <div style={{ fontFamily: 'var(--cth-font-display)', fontSize: 9, lineHeight: '12px', color: 'var(--cth-ink-500)', marginBottom: 6 }}>{title}</div>
+      <div style={{ fontFamily: 'var(--cth-font-display)', fontSize: 12, lineHeight: '12px', color: 'var(--cth-ink-500)', marginBottom: 6 }}>{title}</div>
       {children}
     </div>
   );
@@ -1328,7 +1409,7 @@ function Pre({ children }: { children: React.ReactNode }) {
   return (
     <pre style={{
       margin: '6px 0 0', padding: 8, maxHeight: 200, overflow: 'auto',
-      background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+      background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
       fontFamily: 'var(--cth-font-mono)', fontSize: 12, lineHeight: '16px',
       color: 'var(--cth-ink-900)', whiteSpace: 'pre-wrap', wordBreak: 'break-word'
     }} dir={rtl ? 'auto' : undefined}>{children}</pre>
@@ -1338,7 +1419,7 @@ function Pre({ children }: { children: React.ReactNode }) {
 const textareaStyle: React.CSSProperties = {
   flex: 1, width: '100%', resize: 'none', padding: '6px 8px',
   background: 'var(--cth-paper-100)', border: 'none',
-  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   fontFamily: 'var(--cth-font-mono)', fontSize: 12, lineHeight: '17px',
   color: 'var(--cth-ink-900)', outline: 'none', boxSizing: 'border-box'
 };
@@ -1353,7 +1434,7 @@ function Select({ value, onChange, disabled, children }: {
       onChange={(e) => onChange(e.target.value)}
       style={{
         padding: '3px 6px', background: 'var(--cth-paper-100)',
-        border: 'none', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+        border: 'none', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
         fontFamily: 'var(--cth-font-ui)', fontSize: 12, color: 'var(--cth-ink-900)', cursor: 'pointer',
         // Never let a long option name push the sidebar wider than it is.
         minWidth: 0, maxWidth: '100%'

@@ -94,7 +94,7 @@ export function OfficeThemePicker({ config }: { config: HarnessConfig }) {
   return (
     <div>
       <div style={{
-        fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
+        fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '12px',
         color: 'var(--cth-ink-500)', textTransform: 'uppercase', marginBottom: 10
       }}>
         {t('officeTheme.title')}
@@ -129,15 +129,17 @@ export function OfficeThemePicker({ config }: { config: HarnessConfig }) {
                   display: 'flex', alignItems: 'center', gap: 8, textAlign: 'left',
                   padding: 8, cursor: busy ? 'default' : 'pointer',
                   background: isCurrent ? 'var(--cth-paper-100)' : 'transparent',
+                  // v0.5.x: flat offset shadow matching the ring color, same
+                  // border=shadow rule as every other card/chip now.
                   boxShadow: isCurrent
-                    ? 'inset 0 0 0 1.5px var(--cth-ink-500)'
-                    : 'inset 0 0 0 1px var(--cth-ink-300)',
+                    ? 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)'
+                    : 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
                   opacity: busy && !isCurrent ? 0.6 : 1,
                 }}
               >
                 <span style={{
                   width: 28, height: 28, flexShrink: 0, background: theme.swatch,
-                  boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500)',
+                  boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)',
                 }} />
                 <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -145,12 +147,12 @@ export function OfficeThemePicker({ config }: { config: HarnessConfig }) {
                       {theme.label}
                     </span>
                     {isCurrent && (
-                      <span style={{ fontFamily: 'var(--cth-font-display)', fontSize: 7, color: 'var(--cth-mint)', textTransform: 'uppercase' }}>
+                      <span style={{ fontFamily: 'var(--cth-font-display)', fontSize: 10, color: 'var(--cth-mint)', textTransform: 'uppercase' }}>
                         {t('officeTheme.current')}
                       </span>
                     )}
                     {!theme.built && !isCurrent && (
-                      <span style={{ fontFamily: 'var(--cth-font-display)', fontSize: 7, color: 'var(--cth-ink-500)', textTransform: 'uppercase' }}>
+                      <span style={{ fontFamily: 'var(--cth-font-display)', fontSize: 10, color: 'var(--cth-ink-500)', textTransform: 'uppercase' }}>
                         {t('officeTheme.soon')}
                       </span>
                     )}
@@ -214,7 +216,7 @@ function ThemeSwitchConfirmModal({
               <div style={{
                 width: 32, height: 32, flexShrink: 0,
                 background: 'var(--cth-coral-light)',
-                boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500)',
+                boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Icon name="bell" />

@@ -287,50 +287,64 @@ export function FullscreenTerminal({ config }: FullscreenTerminalProps) {
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'var(--cth-cream-100)',
+      // v0.6.0: lighter middle band; the title bar and roster rail carry the
+      // heavier chrome tone around it.
+      background: 'var(--cth-cream-50)',
       zIndex: 250,
       display: 'flex',
       flexDirection: 'column',
-      paddingTop: 36  // leave room for macOS traffic lights / drag region
+      // v0.6.0: bumped 36 -> 41 to match the title bar below, which now has
+      // real vertical padding (6px top/bottom) around its 28px icon buttons
+      // instead of being clamped to exactly 36px — this reserve has to track
+      // that or the terminal content underneath gets covered by a few px.
+      paddingTop: 41  // leave room for the title bar / drag region
     }}>
       {/* Title bar drag region (so the user can still move the window) */}
       <div
         className="cth-titlebar-drag"
         style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: 36,
-          background: 'linear-gradient(180deg, var(--cth-cream-100) 0%, var(--cth-cream-200) 100%)',
+          // v0.6.0: same fix as the main title bar (App.tsx) — real vertical
+          // padding instead of a hard-clamped height, and the 96px left
+          // reserve (macOS traffic lights) only applied on macOS instead of
+          // unconditionally.
+          position: 'absolute', top: 0, left: 0, right: 0, minHeight: 36,
+          background: 'var(--cth-cream-200)',
           borderBottom: '1px solid var(--cth-ink-300)',
           display: 'flex', alignItems: 'center',
-          paddingLeft: 96, paddingRight: 12, gap: 12,
+          paddingLeft: window.cth.platform === 'darwin' ? 96 : 12,
+          paddingRight: 12, paddingTop: 6, paddingBottom: 6, gap: 12,
           userSelect: 'none'
         }}
       >
         <span style={{
-          fontFamily: 'var(--cth-font-display)', fontSize: 12, lineHeight: '20px',
+          // v0.6.0: pixel face restored on direct request, same as the
+          // Command Center title/IDE button/Queue label/agent names —
+          // --cth-font-display now resolves to the UI font everywhere else.
+          fontFamily: 'var(--cth-font-pixel)', fontSize: 9, lineHeight: '20px',
           color: 'var(--cth-ink-900)'
         }}>MUNDER DIFFLIN · FOCUS MODE</span>
         {/* Same top-right controls as the main title bar — fullscreen covers
             it, so theme / exit-fullscreen / IDE must live here too. */}
         <div className="cth-titlebar-nodrag" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button
+          {/* v0.5.x: these were 4 hand-rolled <button>s, each duplicating the
+              same static inset-ring styling with no hover/press feedback —
+              consolidated onto PixelButton's iconOnly mode so they share its
+              variant palette and tactile 3D press instead of a parallel,
+              undocumented button language. */}
+          <PixelButton
+            variant="secondary" size="sm" iconOnly
             onClick={toggleRoster}
             title={rosterCollapsed ? t('fullscreenTerminal.showAgentList') : t('fullscreenTerminal.hideAgentList')}
             aria-label={rosterCollapsed ? t('fullscreenTerminal.showAgentList') : t('fullscreenTerminal.hideAgentList')}
             aria-pressed={rosterCollapsed}
-            style={{
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: 28, height: 28, padding: 0,
-              // Pressed-in when collapsed, so the rail's absence reads as a state
-              // this button is holding rather than something that broke.
-              background: rosterCollapsed ? 'var(--cth-lemon)' : 'var(--cth-paper-100)',
-              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
-              border: 'none', borderRadius: 2, cursor: 'pointer',
-              color: rosterCollapsed ? 'var(--cth-ink-900)' : 'var(--cth-ink-900)'
-            }}
+            // Pressed-in when collapsed, so the rail's absence reads as a state
+            // this button is holding rather than something that broke.
+            style={rosterCollapsed ? { background: 'var(--cth-lemon)' } : undefined}
           >
             <Icon name="sidebar" size={1} style={{ width: 16, height: 16 }} />
-          </button>
-          <button
+          </PixelButton>
+          <PixelButton
+            variant="secondary" size="sm" iconOnly
             onClick={() => {
               const next = toggleAppTheme();
               void window.cth.updateConfig({ terminalTheme: next });
@@ -341,34 +355,20 @@ export function FullscreenTerminal({ config }: FullscreenTerminalProps) {
             }}
             title={appThemeNow === 'dark' ? t('fullscreenTerminal.lightTheme') : t('fullscreenTerminal.darkTheme')}
             aria-label={t('fullscreenTerminal.toggleTheme')}
-            style={{
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: 28, height: 28, padding: 0,
-              background: 'var(--cth-paper-100)',
-              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
-              border: 'none', borderRadius: 2, cursor: 'pointer',
-              color: 'var(--cth-ink-900)', fontSize: 13, lineHeight: 1
-            }}
+            style={{ fontSize: 13, lineHeight: 1 }}
           >
             {appThemeNow === 'dark' ? '☀' : '☾'}
-          </button>
+          </PixelButton>
           {/* Settings — the main title bar has it, so fullscreen must too:
               anything reachable in one mode and not the other is a trap. Uses
               App's existing `cth:open-settings` event rather than a new store
               action, because this overlay is not a child of App. */}
-          <button
+          <PixelButton
+            variant="secondary" size="sm" iconOnly
             className="cth-settings-btn"
             onClick={() => window.dispatchEvent(new CustomEvent('cth:open-settings'))}
             title="Settings"
             aria-label="Settings"
-            style={{
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: 28, height: 28, padding: 0,
-              background: 'var(--cth-paper-100)',
-              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
-              border: 'none', borderRadius: 2, cursor: 'pointer',
-              color: 'var(--cth-ink-900)'
-            }}
           >
             <svg
               width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -378,22 +378,15 @@ export function FullscreenTerminal({ config }: FullscreenTerminalProps) {
             >
               <path d="M15.5 3.5a5 5 0 0 0-6.1 6.1l-5.6 5.6a2.3 2.3 0 1 0 3.2 3.2l5.6-5.6a5 5 0 0 0 6.1-6.1l-3 3-2.2-.6-.6-2.2z" />
             </svg>
-          </button>
-          <button
+          </PixelButton>
+          <PixelButton
+            variant="secondary" size="sm" iconOnly
             onClick={() => setFullscreen(null)}
             title={t('fullscreenTerminal.exitFullscreen')}
             aria-label={t('fullscreenTerminal.exitFullscreen')}
-            style={{
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: 28, height: 28, padding: 0,
-              background: 'var(--cth-paper-100)',
-              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
-              border: 'none', borderRadius: 2, cursor: 'pointer',
-              color: 'var(--cth-ink-900)'
-            }}
           >
             <Icon name="minimize" size={1} style={{ width: 16, height: 16 }} />
-          </button>
+          </PixelButton>
           {/* v0.3.4: IDE moved to agent level — it lives in each agent's
               header (see Header below), not in this global bar. */}
         </div>
@@ -416,23 +409,16 @@ export function FullscreenTerminal({ config }: FullscreenTerminalProps) {
           borderRight: '1px solid var(--cth-ink-300)'
         }}>
           <div style={{ padding: 8, borderBottom: '1px solid var(--cth-ink-300)' }}>
-            <button
+            <PixelButton
+              variant="secondary"
+              size="md"
+              fullWidth
               onClick={() => setAddAgentOpen(true)}
               title={t('fullscreenTerminal.addAgent')}
-              style={{
-                width: '100%', height: 32,
-                background: 'var(--cth-cream-100)',
-                border: 'none',
-                boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
-                fontFamily: 'var(--cth-font-ui)',
-                fontSize: 'clamp(14px, 0.7vw, 15px)',
-                color: 'var(--cth-ink-900)',
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                cursor: 'pointer'
-              }}
+              style={{ fontSize: 'clamp(14px, 0.7vw, 15px)' }}
             >
               <Icon name="plus" /> {t('agentStrip.addAgent')}
-            </button>
+            </PixelButton>
           </div>
 
           <div className="cth-scroll-hidden" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '6px 0' }}>
@@ -560,10 +546,13 @@ export function FullscreenTerminal({ config }: FullscreenTerminalProps) {
         </aside>
         )}
 
+        {/* v0.6.0: no padding — edge-to-edge against the window/roster, per
+            direct request ("no bleeding edges... no unnecessary broken
+            gaps"). CommandCenterPanel and Header already carry their own
+            internal spacing. */}
         <div style={{
           flex: 1, minWidth: 0, minHeight: 0,
-          display: 'flex', flexDirection: 'column',
-          padding: 12, gap: 10
+          display: 'flex', flexDirection: 'column'
         }}>
           {agent.isGod ? (
             // Michael runs the floor from the command center — its tabs (tasks,
@@ -632,7 +621,9 @@ function ContextBar({ tokens, limit, accent }: { tokens?: number; limit?: number
   const { t } = useTranslation();
   if (tokens === undefined || !limit) return null;
   const pct = Math.max(0, Math.min(100, Math.round((tokens / limit) * 100)));
-  const color = pct >= 85 ? 'var(--cth-coral)' : pct >= 65 ? 'var(--cth-lemon)' : `var(--cth-${accent})`;
+  // v0.6.0: brand orange while comfortable, matching AgentCard's gauge and
+  // design-system.html's always-orange progress fill.
+  const color = pct >= 85 ? 'var(--cth-coral)' : pct >= 65 ? 'var(--cth-lemon)' : 'var(--cth-primary)';
   const k = (n: number) => (n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
   return (
     <div
@@ -725,10 +716,14 @@ function SidebarRow({
         style={{
           width: '100%',
           padding: '6px 8px',
-          background: active ? 'var(--cth-cream-100)' : 'transparent',
+          // v0.6.0: same orange selection language as AgentCard/the roster
+          // strip, instead of a barely-distinguishable cream-tint + thin
+          // dark edge — this row had no visible difference between selected
+          // and unselected at a glance.
+          background: active ? 'var(--cth-primary-soft)' : 'transparent',
           border: 'none',
           boxShadow: active
-            ? 'inset 3px 0 0 var(--cth-ink-900), inset 0 0 0 1px var(--cth-ink-100)'
+            ? 'inset 3px 0 0 var(--cth-primary), inset 0 0 0 1px var(--cth-primary)'
             // Insertion cue on the hovered drop target.
             : drag.overId === agent.id && drag.dragId && drag.dragId !== agent.id
             ? 'inset 0 2px 0 var(--cth-ink-900)'
@@ -746,7 +741,7 @@ function SidebarRow({
         <div style={{
           width: scale.portrait, height: Math.round(scale.portrait * 1.3), flexShrink: 0,
           background: `var(--cth-${agent.accent}-light)`,
-          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
           // Anchor the sprite's TOP: the portrait is taller than this tile, and
           // bottom-anchoring cropped the head — crop feet, not face (v0.3.4).
           display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
@@ -761,7 +756,10 @@ function SidebarRow({
             <span style={{
               flex: 1, minWidth: 0,
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-              fontFamily: 'var(--cth-font-display)',
+              // v0.6.0: pixel face restored on direct request —
+              // --cth-font-display now resolves to the UI font everywhere
+              // else. `scale.name` was already sized for this face.
+              fontFamily: 'var(--cth-font-pixel)',
               fontSize: scale.name, lineHeight: 1.5
             }}>{agent.name.toUpperCase()}</span>
             {/* Your unsent text outranks the agent's own state here: an idle
@@ -784,7 +782,7 @@ function SidebarRow({
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 12, lineHeight: 1, color: 'var(--cth-ink-500)',
                 background: notePosition ? 'var(--cth-cream-200)' : 'var(--cth-paper-100)',
-                boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+                boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
                 cursor: 'pointer'
               }}
             >✎</span>
@@ -900,7 +898,7 @@ function SidebarRow({
               resize: 'vertical',
               boxSizing: 'border-box',
               background: 'var(--cth-cream-100)',
-              boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+              boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
               fontFamily: 'var(--cth-font-mono)',
               fontSize: noteFontSize,
               lineHeight: `${Math.round(noteFontSize * 1.6)}px`,
@@ -959,7 +957,7 @@ function Header({ agent, onEdit }: { agent: Agent; onEdit: () => void }) {
       boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)'
     }}>
       <span style={{
-        fontFamily: 'var(--cth-font-display)', fontSize: 10, lineHeight: '16px',
+        fontFamily: 'var(--cth-font-display)', fontSize: 13, lineHeight: '16px',
         color: 'var(--cth-ink-900)'
       }}>{agent.name.toUpperCase()}</span>
       {/* Edit belongs with the NAME, not with the action cluster on the right:

@@ -213,7 +213,7 @@ export function RealtimeMichaelToggle({ compact = false }: RealtimeMichaelToggle
               height: 6,
               flexShrink: 0,
               background: noKey ? 'var(--cth-ink-300)' : view.dot,
-              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
               animation: noKey ? 'none' : view.anim
             }}
           />
@@ -271,7 +271,7 @@ export function RealtimeMichaelToggle({ compact = false }: RealtimeMichaelToggle
                 // Matches the note editor's portalled popover: hairline + a hard
                 // drop shadow, so it reads as floating above the dock rather than
                 // as part of whichever card it happens to cover.
-                boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), 4px 4px 0 rgba(26,19,32,0.25)',
+                boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), 4px 4px 0 0 var(--cth-ink-500)',
                 fontFamily: 'var(--cth-font-ui)',
                 fontSize: 11,
                 lineHeight: '15px',

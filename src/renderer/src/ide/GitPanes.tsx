@@ -35,7 +35,7 @@ const noteStyle: React.CSSProperties = {
 const smallBtn: React.CSSProperties = {
   padding: '0 6px', height: 20, fontFamily: 'var(--cth-font-ui)', fontSize: 11,
   color: 'var(--cth-ink-900)', background: 'var(--cth-cream-100)', border: 'none',
-  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)', cursor: 'pointer',
+  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)', cursor: 'pointer',
   display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0
 };
 

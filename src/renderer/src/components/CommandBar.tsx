@@ -50,13 +50,16 @@ export function CommandBar({ accent, busy, blocked, onSend }: CommandBarProps) {
             style={{
               padding: '4px 10px 2px',
               border: 'none',
-              background: mode === m ? `var(--cth-${accent})` : 'var(--cth-cream-200)',
-              color: 'var(--cth-ink-900)',
+              // v0.6.0: brand orange for the active mode, not the agent's own
+              // accent — matches the mockup's single-accent nav treatment.
+              background: mode === m ? 'var(--cth-primary)' : 'var(--cth-cream-200)',
+              color: mode === m ? 'var(--cth-on-primary)' : 'var(--cth-ink-900)',
               boxShadow: mode === m
                 ? 'inset 0 0 0 1px var(--cth-ink-300), 0 -2px 0 var(--cth-ink-900) inset'
                 : 'inset 0 0 0 1px var(--cth-ink-100)',
               fontFamily: 'var(--cth-font-ui)',
               fontSize: 13,
+              fontWeight: mode === m ? 600 : 400,
               cursor: 'pointer'
             }}
           >
@@ -69,7 +72,8 @@ export function CommandBar({ accent, busy, blocked, onSend }: CommandBarProps) {
           <span style={{
             fontFamily: 'var(--cth-font-mono)',
             fontSize: 18,
-            color: `var(--cth-${accent})`,
+            // v0.6.0: brand orange caret, matching the mockup's prompt-line car.
+            color: 'var(--cth-primary)',
             lineHeight: '20px',
             paddingLeft: 2
           }}>{'>'}</span>
@@ -83,7 +87,7 @@ export function CommandBar({ accent, busy, blocked, onSend }: CommandBarProps) {
               padding: '4px 6px 2px',
               background: 'var(--cth-paper-100)',
               border: 'none',
-              boxShadow: `inset 0 0 0 1px ${inputBorder}`,
+              boxShadow: `inset 0 0 0 1px ${inputBorder}, 2px 2px 0 0 ${inputBorder}`,
               fontFamily: 'var(--cth-font-mono)',
               fontSize: 18,
               lineHeight: '20px',

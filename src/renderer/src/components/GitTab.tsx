@@ -115,10 +115,10 @@ export function GitTab({ cwd }: GitTabProps) {
         borderBottom: '1px solid var(--cth-ink-700)'
       }}>
         <span style={{
-          fontFamily: 'var(--cth-font-display)', fontSize: 10, lineHeight: '14px',
+          fontFamily: 'var(--cth-font-display)', fontSize: 13, lineHeight: '14px',
           padding: '2px 6px',
           background: 'var(--cth-sky-light)',
-          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
           color: 'var(--cth-ink-900)'
         }}>
           {detached ? t('gitTab.detachedHead') : (branch ?? '—')}
@@ -171,7 +171,7 @@ export function GitTab({ cwd }: GitTabProps) {
                 <span key={`l-${b}`} style={{
                   padding: '0 6px', fontSize: 12,
                   background: b === branch ? 'var(--cth-lemon)' : 'var(--cth-cream-100)',
-                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                   color: 'var(--cth-ink-900)'
                 }}>{b}</span>
               ))}
@@ -179,7 +179,7 @@ export function GitTab({ cwd }: GitTabProps) {
                 <span key={`r-${b}`} style={{
                   padding: '0 6px', fontSize: 12,
                   background: 'var(--cth-cream-100)',
-                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
                   color: 'var(--cth-ink-500)',
                   display: 'inline-flex', alignItems: 'center', gap: 4
                 }}>
@@ -206,7 +206,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div style={{ marginBottom: 4 }}>
       <div style={{
-        fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
+        fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '12px',
         textTransform: 'uppercase',
         color: 'var(--cth-ink-700)',
         padding: '8px 10px 4px',

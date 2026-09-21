@@ -63,7 +63,7 @@ export function QuitWarningModal({ ptyCount, closing, onCancel, onConfirm, onClo
                   <div style={{
                     width: 32, height: 32,
                     background: closing!.phase === 'complete' ? 'var(--cth-mint-light, #cdeccd)' : 'var(--cth-lemon-light, #f6ecc4)',
-                    boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500)',
+                    boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0
                   }}>
@@ -99,7 +99,7 @@ export function QuitWarningModal({ ptyCount, closing, onCancel, onConfirm, onClo
                 <div style={{
                   padding: 8,
                   background: 'var(--cth-cream-200)',
-                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                   fontSize: 12, lineHeight: '18px',
                   color: 'var(--cth-ink-700)',
                   fontFamily: 'var(--cth-font-display)'
@@ -108,7 +108,7 @@ export function QuitWarningModal({ ptyCount, closing, onCancel, onConfirm, onClo
                     ? `${closing!.acked} / ${closing!.total} WORKERS CONFIRMED${closing!.acked >= closing!.total ? ' — WAITING FOR THE ORCHESTRATOR' : ''}`
                     : 'NO WORKERS ON THE FLOOR — WAITING FOR THE ORCHESTRATOR'}
                   {closing!.phase === 'timeout' && (
-                    <div style={{ marginTop: 6, fontFamily: 'var(--cth-font-body, inherit)' }}>
+                    <div style={{ marginTop: 6, fontFamily: 'var(--cth-font-ui)' }}>
                       This is taking a while (an agent may be mid-compaction or deep in a
                       tool call). Keep waiting, or force quit and accept the data loss.
                     </div>
@@ -135,7 +135,7 @@ export function QuitWarningModal({ ptyCount, closing, onCancel, onConfirm, onClo
                   <div style={{
                     width: 32, height: 32,
                     background: 'var(--cth-coral-light)',
-                    boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500)',
+                    boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500), 2px 2px 0 0 var(--cth-ink-500)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0
                   }}>
@@ -162,7 +162,7 @@ export function QuitWarningModal({ ptyCount, closing, onCancel, onConfirm, onClo
                 <div style={{
                   padding: 8,
                   background: 'var(--cth-cream-200)',
-                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                   fontSize: 12, lineHeight: '18px',
                   color: 'var(--cth-ink-700)'
                 }}>
@@ -175,7 +175,7 @@ export function QuitWarningModal({ ptyCount, closing, onCancel, onConfirm, onClo
                   <div style={{
                     padding: 8,
                     background: 'var(--cth-coral-light)',
-                    boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                    boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                     fontSize: 12, lineHeight: '18px',
                     color: 'var(--cth-ink-900)'
                   }}>

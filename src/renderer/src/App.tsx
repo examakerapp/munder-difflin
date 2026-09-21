@@ -32,6 +32,7 @@ import { TaskDetailOverlay } from '@/components/TaskDetailOverlay';
 import { IdePanel } from '@/ide/IdePanel';
 import { useHoldOptionToTalk } from '@/freeflow/holdOption';
 import brandLogo from '@brand/logo.png?url';
+import { APP_NAME } from '@shared/brand';
 
 // Injected at build time from package.json (see electron.vite.config.ts).
 declare const __APP_VERSION__: string;
@@ -284,20 +285,34 @@ export function App() {
       <div
         className="cth-titlebar-drag"
         style={{
-          height: 36, minHeight: 36,
-          background: 'linear-gradient(180deg, var(--cth-cream-100) 0%, var(--cth-cream-200) 100%)',
+          // v0.6.0: real vertical padding instead of a hard-clamped height —
+          // the icon buttons (28-40px depending on size) were nearly flush
+          // against this bar's own top/bottom edges, reading as cramped/
+          // clipped rather than comfortably inset.
+          minHeight: 36,
+          // v0.6.0: three-band contrast — the title bar and the agent strip at
+          // the bottom share one slightly heavier tone, and the content between
+          // them sits on a lighter surface, so the window reads as chrome /
+          // work area / chrome instead of one flat field.
+          background: 'var(--cth-cream-200)',
           borderBottom: '1px solid var(--cth-ink-300)',
           display: 'flex',
           alignItems: 'center',
-          paddingLeft: 96,
+          // v0.6.0: 96px was a fixed reserve for macOS's traffic-light window
+          // controls under a hiddenInset title bar — applied unconditionally
+          // even on Windows/Linux, where nothing sits there and the logo/
+          // version just sat 96px off the true left edge for no reason.
+          paddingLeft: window.cth.platform === 'darwin' ? 96 : 12,
           paddingRight: 12,
+          paddingTop: 6,
+          paddingBottom: 6,
           gap: 12,
           userSelect: 'none'
         }}
       >
         <img
           src={brandLogo}
-          alt="Munder Difflin"
+          alt={APP_NAME}
           style={{ height: 20, width: 'auto', display: 'block' }}
         />
         {/* v0.3.7: the version is no longer inert text — it doubles as the
@@ -313,7 +328,11 @@ export function App() {
         {/* v0.3.4: theme + fullscreen live HERE (top right), not buried in the
             terminal header — and the theme darkens the whole app, terminals
             included (design/theme.ts + tokens.css dark block). */}
-        <button
+        {/* v0.5.x: these 3 were hand-rolled <button>s duplicating the same
+            static inset-ring styling with no hover/press feedback —
+            consolidated onto PixelButton's iconOnly mode. */}
+        <PixelButton
+          variant="secondary" size="sm" iconOnly
           className="cth-titlebar-nodrag cth-tip"
           onClick={() => {
             const next = toggleAppTheme();
@@ -332,41 +351,27 @@ export function App() {
           }}
           data-tip={appThemeNow === 'dark' ? 'Light theme' : 'Dark theme'}
           aria-label="Toggle dark mode"
-          style={{
-            marginLeft: 'auto',
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 28, height: 28, padding: 0,
-            background: 'var(--cth-paper-100)',
-            boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
-            border: 'none', borderRadius: 2, cursor: 'pointer',
-            color: 'var(--cth-ink-900)', fontSize: 13, lineHeight: 1
-          }}
+          style={{ marginLeft: 'auto', fontSize: 13, lineHeight: 1 }}
         >
           {appThemeNow === 'dark' ? '☀' : '☾'}
-        </button>
+        </PixelButton>
         {/* v0.3.4: the IDE button moved to agent level — every agent's header
             (sidebar detail, god Command Center, fullscreen) carries it. */}
-        <button
+        <PixelButton
+          variant="secondary" size="sm" iconOnly
           className="cth-titlebar-nodrag cth-settings-btn cth-tip"
           onClick={() => { setSettingsSection(undefined); setSettingsOpen(true); }}
           data-tip="Settings"
           aria-label="Settings"
-          style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 28, height: 28, padding: 0,
-            background: 'var(--cth-paper-100)',
-            boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
-            border: 'none', borderRadius: 2, cursor: 'pointer',
-            color: 'var(--cth-ink-900)'
-          }}
         >
           <GearGlyph />
-        </button>
+        </PixelButton>
         {/* Fullscreen. The title bar is chrome, not canvas, so these two use
             clean stroke icons rather than the 16x16 pixel set the rest of the UI
             is drawn in — at 16-18px a pixel-grid glyph reads as a rendering
             artifact next to the OS window controls, not as a style choice. */}
-        <button
+        <PixelButton
+          variant="secondary" size="sm" iconOnly
           className="cth-titlebar-nodrag cth-tip"
           onClick={() => {
             if (fullscreenAgentId) { useStore.getState().setFullscreen(null); return; }
@@ -378,26 +383,21 @@ export function App() {
           }}
           data-tip={fullscreenAgentId ? 'Exit focus mode (Esc)' : 'Focus mode'}
           aria-label="Toggle focus mode"
-          style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 28, height: 28, padding: 0,
-            background: 'var(--cth-paper-100)',
-            boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
-            border: 'none', borderRadius: 2, cursor: 'pointer',
-            color: 'var(--cth-ink-900)'
-          }}
         >
           {fullscreenAgentId ? <CollapseGlyph /> : <ExpandGlyph />}
-        </button>
+        </PixelButton>
 
       </div>
 
       <div style={{
         flex: 1, minHeight: 0,
         display: 'flex',
-        padding: 16,
         gap: 0
       }}>
+        {/* No padding on this cell — the floor is an edge-to-edge pannable
+            canvas now (see OfficeFloor.tsx), not a bordered card, so it
+            shouldn't sit inside a gutter. The Command Center sidebar past the
+            splitter keeps its own padding below. */}
         <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: 'relative' }}>
           <OfficeFloor />
           <MemoryPanel />
@@ -432,6 +432,9 @@ export function App() {
           viewportWidth={vpWidth}
         />
 
+        {/* v0.6.0: no gutter — the command-center column sits directly on the
+            background, flush against the floor, per direct request ("not
+            inside a card... without bleeding or detached lines"). */}
         <div style={{
           width: sidebarWidth, flexShrink: 0,
           minHeight: 0, display: 'flex', flexDirection: 'column'
@@ -445,7 +448,7 @@ export function App() {
               justifyContent: 'center', alignItems: 'center', gap: 12
             }}>
               <div style={{
-                fontFamily: 'var(--cth-font-display)', fontSize: 10, lineHeight: '14px',
+                fontFamily: 'var(--cth-font-display)', fontSize: 13, lineHeight: '14px',
                 color: 'var(--cth-ink-500)'
               }}>WAKING THE FLOOR</div>
               <p style={{ margin: 0, fontSize: 13, textAlign: 'center', color: 'var(--cth-ink-700)' }}>
@@ -460,7 +463,7 @@ export function App() {
               justifyContent: 'center', alignItems: 'center', gap: 12
             }}>
               <div style={{
-                fontFamily: 'var(--cth-font-display)', fontSize: 10, lineHeight: '14px',
+                fontFamily: 'var(--cth-font-display)', fontSize: 13, lineHeight: '14px',
                 color: 'var(--cth-ink-500)'
               }}>NO AGENT SELECTED</div>
               <p style={{ margin: 0, fontSize: 13, textAlign: 'center', color: 'var(--cth-ink-700)' }}>

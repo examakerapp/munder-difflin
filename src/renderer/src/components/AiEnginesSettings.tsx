@@ -41,7 +41,7 @@ const inputStyle: CSSProperties = {
   padding: '6px 8px 4px',
   background: 'var(--cth-paper-100)',
   border: 'none',
-  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   fontFamily: 'var(--cth-font-ui)',
   fontSize: 13,
   color: 'var(--cth-ink-900)',
@@ -49,13 +49,13 @@ const inputStyle: CSSProperties = {
 };
 const labelStyle: CSSProperties = {
   fontFamily: 'var(--cth-font-display)',
-  fontSize: 8,
+  fontSize: 11,
   lineHeight: '12px',
   color: 'var(--cth-ink-700)',
   textTransform: 'uppercase'
 };
 const headStyle: CSSProperties = {
-  fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
+  fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '12px',
   color: 'var(--cth-ink-500)', textTransform: 'uppercase', marginBottom: 2
 };
 const linkStyle: CSSProperties = { color: 'var(--cth-ink-900)', textDecoration: 'underline', cursor: 'pointer' };
@@ -207,7 +207,7 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
       {/* Unsandboxed-in-auto caveat (Pam guardrail #6) */}
       <div style={{
         fontSize: 12, color: 'var(--cth-ink-700)', lineHeight: '17px',
-        padding: 8, boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)', background: 'var(--cth-paper-100)'
+        padding: 8, boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)', background: 'var(--cth-paper-100)'
       }}>
         {t('aiEngines.autoModeCaveat')}
       </div>

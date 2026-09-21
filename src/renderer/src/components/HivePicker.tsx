@@ -86,12 +86,12 @@ export function HivePicker({ config, onOpenCurrent }: HivePickerProps) {
             {/* CURRENT — the last-used home, the one-click default. */}
             {current && (
               <div>
-                <div style={{ fontFamily: 'var(--cth-font-display)', fontSize: 9, color: 'var(--cth-ink-500)', marginBottom: 4 }}>
+                <div style={{ fontFamily: 'var(--cth-font-display)', fontSize: 12, color: 'var(--cth-ink-500)', marginBottom: 4 }}>
                   CURRENT
                 </div>
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
-                  background: 'var(--cth-mint-light)', boxShadow: 'inset 0 0 0 2px var(--cth-mint)'
+                  background: 'var(--cth-mint-light)', boxShadow: 'inset 0 0 0 2px var(--cth-mint), 2px 2px 0 0 var(--cth-mint)'
                 }}>
                   <Icon name="folder" />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -113,7 +113,7 @@ export function HivePicker({ config, onOpenCurrent }: HivePickerProps) {
             {/* RECENTS — other homes this install has opened before. */}
             {recents.length > 0 && (
               <div>
-                <div style={{ fontFamily: 'var(--cth-font-display)', fontSize: 9, color: 'var(--cth-ink-500)', marginBottom: 4 }}>
+                <div style={{ fontFamily: 'var(--cth-font-display)', fontSize: 12, color: 'var(--cth-ink-500)', marginBottom: 4 }}>
                   RECENT
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 220, overflowY: 'auto' }}>
@@ -125,7 +125,7 @@ export function HivePicker({ config, onOpenCurrent }: HivePickerProps) {
                       title={`Switch to ${h} (reloads the app)`}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
-                        background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+                        background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
                         border: 'none', cursor: busy ? 'default' : 'pointer', textAlign: 'left',
                         opacity: busy && busy !== h ? 0.5 : 1
                       }}
@@ -152,7 +152,7 @@ export function HivePicker({ config, onOpenCurrent }: HivePickerProps) {
             {error && (
               <div style={{
                 padding: '6px 10px', background: 'var(--cth-coral-light)',
-                boxShadow: 'inset 0 0 0 1px var(--cth-coral)', fontSize: 12, color: 'var(--cth-ink-900)'
+                boxShadow: 'inset 0 0 0 1px var(--cth-coral), 2px 2px 0 0 var(--cth-coral)', fontSize: 12, color: 'var(--cth-ink-900)'
               }}>{error}</div>
             )}
 

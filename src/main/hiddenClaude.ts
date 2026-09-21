@@ -142,6 +142,10 @@ export function runHiddenClaude(prompt: string, opts: HiddenClaudeOptions): Prom
           PATH: userShellPath(),
           ...(opts.env ?? {}),
         } as Record<string, string>,
+        // See the matching comment in main/pty.ts: forces WinPTY over node-pty's
+        // default ConPTY on Windows, diagnosed live against a ConPTY failure
+        // that let an interactive Claude prompt print then die with no error.
+        ...(process.platform === 'win32' ? { useConpty: false } : {})
       });
     } catch (e) {
       resolve({ ok: false, error: e instanceof Error ? e.message : String(e) });

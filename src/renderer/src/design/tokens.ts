@@ -2,45 +2,48 @@
 // Any change here must also update tokens.css.
 
 export const colors = {
+  // v0.6.0 Composer redesign: warm cream/paper neutrals, replacing the
+  // v0.5.0 cool blue-gray family (mirrors tokens.css — keep both in sync).
   cream: {
-    50: 0xfffdf5,
-    100: 0xfff8e7,
-    200: 0xf4e9c7,
-    300: 0xe8d9a0
+    50: 0xf7f6f1,
+    100: 0xeeefe9,
+    200: 0xe7e6e0,
+    300: 0xd8d5c9
   },
   paper: {
-    100: 0xfcfaf0,
-    200: 0xf0ead2
+    100: 0xffffff,
+    200: 0xfbfaf7
   },
   ink: {
-    900: 0x1a1320,
-    700: 0x3d2e4a,
-    500: 0x6b5878,
-    300: 0xa899b5,
-    100: 0xd9cfe0
+    900: 0x151515,
+    700: 0x43423d,
+    500: 0x6b6a67,
+    300: 0xa8a79f,
+    100: 0xe7e6e0
   },
-  // v0.3.4 recalibration: same hues, professional saturation (mirrors tokens.css)
+  // v0.5.0: fully replaced with picks from PostHog's published categorical
+  // data-viz palette (mirrors tokens.css).
   accent: {
-    coral: 0xd96a62,
-    coralLight: 0xf3d3cd,
-    mint: 0x5ca97a,
-    mintLight: 0xd2e7da,
-    sky: 0x4f9faf,
-    skyLight: 0xcfe5e9,
-    lemon: 0xdcab3c,
-    lemonLight: 0xf3e4bc,
-    lilac: 0x9482d3,
-    lilacLight: 0xe0daf2,
-    peach: 0xd99168,
-    peachLight: 0xf3daca
+    coral: 0xf14f58,
+    coralLight: 0xfde1e2,
+    mint: 0x529a0a,
+    mintLight: 0xe3f0d4,
+    sky: 0x1d4aff,
+    skyLight: 0xdde5ff,
+    lemon: 0xe4a604,
+    lemonLight: 0xfbebc7,
+    lilac: 0xa56eff,
+    lilacLight: 0xede3ff,
+    peach: 0xfe729e,
+    peachLight: 0xffe0ea
   },
   status: {
-    idle: 0xa199ab,
-    thinking: 0x4f9faf,
-    working: 0xdcab3c,
-    blocked: 0xd96a62,
-    success: 0x5ca97a,
-    ghost: 0xd9d3de
+    idle: 0x9ca0aa,
+    thinking: 0x1d4aff,
+    working: 0xe4a604,
+    blocked: 0xf14f58,
+    success: 0x529a0a,
+    ghost: 0xd5d8dd
   },
   world: {
     grassLight: 0xd4eab0,

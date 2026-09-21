@@ -1936,8 +1936,12 @@ export class HiveManager {
     // Newest first by ISO created_at (lexicographic == chronological for ISO-8601).
     out.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
     if (wantId) return out.slice(0, 1);
+    // Ceiling raised from 40 for the chat view, which wants real scrollback
+    // rather than a handful of recent lines. The voice path is unaffected: it
+    // clamps its own limit to 40 before calling (realtime/tools.ts get_messages),
+    // so nothing that was budget-sensitive can suddenly ask for more.
     const lim = typeof opts.limit === 'number' && isFinite(opts.limit)
-      ? Math.max(1, Math.min(40, Math.round(opts.limit)))
+      ? Math.max(1, Math.min(500, Math.round(opts.limit)))
       : 12;
     return out.slice(0, lim);
   }

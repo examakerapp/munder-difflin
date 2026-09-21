@@ -93,6 +93,10 @@
     "noteAria": "Note for {{name}}"
   },
   "askMe": {
+    "denyTitle": "refuse this — anything typed above is sent as the reason",
+    "approveTitle": "approve this — anything typed above is sent as the reason",
+    "deny": "deny",
+    "approve": "approve",
     "emptyTitle": "Nothing needs you right now. 🌿",
     "emptySub": "When the team blocks a task on your input — a question to answer or a to-do only you can perform — it shows up here (and on the ASK ME board on the floor).",
     "openDetail": "open the full task detail",
@@ -128,8 +132,30 @@
   "sidebar": {
     "terminal": "terminal",
     "git": "git",
-    "messages": "messages",
+    "messages": "chat",
     "traces": "traces"
+  },
+  "hiveChat": {
+    "orchestrator": "the orchestrator",
+    "sendFailed": "Could not send that message.",
+    "you": "You",
+    "everyone": "everyone",
+    "unknown": "unknown",
+    "all": "all",
+    "search": "search…",
+    "clear": "clear",
+    "oneThread": "Showing one thread",
+    "loading": "Loading the conversation…",
+    "noMatches": "Nothing matches that filter.",
+    "empty": "No messages yet. Conversations between agents appear here as they happen.",
+    "to": "to {{name}}",
+    "needsReply": "needs a reply",
+    "less": "less",
+    "more": "more",
+    "viewThread": "view thread",
+    "composerPlaceholder": "Message {{name}}…",
+    "send": "send",
+    "sending": "sending…"
   },
   "toolWaterfall": {
     "fresh": "fresh {{tokens}}t",
@@ -378,6 +404,7 @@
     "unsavedWarning": "You have unsaved settings. Close anyway and lose them?"
   },
   "commandCenter": {
+    "asksWaiting": "{{count}} waiting on you",
     "title": "COMMAND CENTER",
     "runsTheFloor": "{{name}} runs the floor",
     "deliveryPaused": "paused",
@@ -388,6 +415,7 @@
     "ide": "IDE",
     "tabs": {
       "terminal": "terminal",
+      "chat": "chat",
       "floor": "monitor",
       "tasks": "tasks",
       "human": "ask me",
@@ -475,6 +503,10 @@
     "openIdeAria": "Open the IDE"
   },
   "addAgent": {
+    "permission": "Permission",
+    "permissionAsk": "Ask me before risky actions",
+    "permissionAskHint": "Exempts this agent from Auto mode: it stops for per-tool approval in its own terminal.",
+    "permissionAskHintAutoOff": "Auto mode is already off, so every agent asks. This pins the setting for this agent.",
     "title": "ADD AGENT",
     "hireImported": "hire imported:",
     "byAuthor": " · by {{author}}",

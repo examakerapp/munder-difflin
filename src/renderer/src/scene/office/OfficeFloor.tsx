@@ -4,6 +4,7 @@ import { Application, Container, Graphics, Ticker, Texture } from 'pixi.js';
 // PixiJS uses new Function() internally, blocked by Electron CSP — this patches it.
 import 'pixi.js/unsafe-eval';
 import { useStore, type Agent } from '@/store/store';
+import { useAppTheme } from '@/design/theme';
 import { TiledMapRenderer } from './TiledMapRenderer';
 import { Camera } from './Camera';
 import { Character, paintCup } from './Character';
@@ -170,6 +171,19 @@ export function OfficeFloor() {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const appRef = useRef<Application | null>(null);
   const mountIdRef = useRef(0);
+  // Day/night tint overlay — see the effect near the bottom that keeps its
+  // alpha in sync with the app theme. A plain ref (not state): it's driven
+  // imperatively from Pixi, never read during React's own render.
+  const nightOverlayRef = useRef<Graphics | null>(null);
+  const appTheme = useAppTheme();
+  // The overlay is created asynchronously inside init() below, and the
+  // sync effect that normally keeps its alpha current only re-fires on an
+  // appTheme/glGeneration CHANGE — so if the app starts in dark mode, that
+  // effect could run before the overlay exists and never fire again once it
+  // does, leaving the floor untinted. Reading this ref at creation time
+  // (instead of always starting at alpha 0) closes that race.
+  const appThemeRef = useRef(appTheme);
+  useEffect(() => { appThemeRef.current = appTheme; }, [appTheme]);
   // Bumped when the WebGL context is evicted; a dep of the effect below, so the
   // whole scene is torn down and rebuilt through the existing mount path rather
   // than through a second, parallel recovery routine.
@@ -285,6 +299,23 @@ export function OfficeFloor() {
       const world = new Container();
       app.stage.addChild(world);
 
+      // Day/night tint — a flat semi-transparent rectangle on TOP of the whole
+      // scene (a direct stage child, not a child of `world`, so it stays fixed
+      // to the visible screen regardless of the camera's own pan/zoom). Alpha
+      // starts at 0 and is kept in sync with the live app theme by the effect
+      // near the bottom of this component; this only sizes/positions it.
+      // Deliberately just a flat rect, not a filter or per-tile recolor — the
+      // tileset/character art itself is untouched, this only sits over it.
+      const nightOverlay = new Graphics();
+      nightOverlay.rect(0, 0, app.screen.width, app.screen.height).fill({ color: 0x05060a });
+      // v0.6.0: disabled per direct request — the floor stays exactly as
+      // bright in dark mode as in light mode. Kept as a no-op alpha-0
+      // Graphics (not removed) so re-enabling later is a one-line change.
+      nightOverlay.alpha = 0;
+      nightOverlay.eventMode = 'none'; // must never intercept clicks/hover meant for the floor beneath it
+      app.stage.addChild(nightOverlay);
+      nightOverlayRef.current = nightOverlay;
+
       const mapRenderer = new TiledMapRenderer(resolveThemeMap(theme), tilesetTextures);
       world.addChild(mapRenderer.getContainer());
       const charLayer = mapRenderer.getCharacterContainer();
@@ -296,6 +327,59 @@ export function OfficeFloor() {
       camera.setMapSize(mapRenderer.width * mapRenderer.tileSize, mapRenderer.height * mapRenderer.tileSize);
       camera.setViewSize(app.screen.width, app.screen.height);
       camera.fitToScreen();
+
+      // ─── Hand-tool pan + scroll-to-zoom ────────────────────────────────────
+      // The camera above only ever moved itself (fit-to-screen, focus-on-select);
+      // nothing let the user actually explore the floor by hand, which falls
+      // apart once there are more desks than fit in one fitted view. Wired
+      // directly on the canvas DOM element rather than through Pixi's own event
+      // system — coexists fine with the individual sprites' `pointertap`
+      // handlers below since neither drag nor wheel here calls stopPropagation,
+      // and a plain click (no real movement) still reaches them untouched.
+      app.renderer.events.cursorStyles.default = 'grab';
+      const DRAG_THRESHOLD = 4; // px — below this it's a click, not a pan
+      let dragging = false;
+      let dragMoved = false;
+      let lastPointerX = 0;
+      let lastPointerY = 0;
+
+      const onPointerDown = (ev: PointerEvent) => {
+        if (ev.button !== 0) return; // left-drag only; right/middle stay free
+        dragging = true;
+        dragMoved = false;
+        lastPointerX = ev.clientX;
+        lastPointerY = ev.clientY;
+      };
+      const onPointerMove = (ev: PointerEvent) => {
+        if (!dragging) return;
+        const dx = ev.clientX - lastPointerX;
+        const dy = ev.clientY - lastPointerY;
+        if (!dragMoved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+        dragMoved = true;
+        lastPointerX = ev.clientX;
+        lastPointerY = ev.clientY;
+        camera.panBy(dx, dy);
+        app.canvas.style.cursor = 'grabbing';
+      };
+      const endDrag = () => { dragging = false; };
+      const onWheel = (ev: WheelEvent) => {
+        ev.preventDefault();
+        const rect = app.canvas.getBoundingClientRect();
+        const factor = Math.pow(1.0015, -ev.deltaY);
+        camera.zoomAt(ev.clientX - rect.left, ev.clientY - rect.top, factor);
+      };
+      app.canvas.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
+      app.canvas.addEventListener('wheel', onWheel, { passive: false });
+      (app as any).__panZoom = () => {
+        app.canvas.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', endDrag);
+        window.removeEventListener('pointercancel', endDrag);
+        app.canvas.removeEventListener('wheel', onWheel);
+      };
 
       // ─── The boss's wall calendar → TRIGGERS ───────────────────────────────
       // A little tear-off month page hangs on the CEO office wall. Clicking it
@@ -374,6 +458,11 @@ export function OfficeFloor() {
         }
       }
       if (waitTiles.length === 0) waitTiles.push(entrance);
+      // v0.5.x: one common door for everyone, by design — every agent walks
+      // in and out through the same `entrance`, however far their seat is
+      // from it. (A per-wing nearest-door version was tried and reverted:
+      // the office should read as one building with one front door, not
+      // several disconnected ones.)
 
       // Seat 0 is desk-ceo — "Michael's room" — reserved for the god agent.
       // All other workers claim seats from 1 onward.
@@ -1398,7 +1487,7 @@ export function OfficeFloor() {
           frames,
           seatTile,
           seatDirection: facingForSeat(seatTile),
-          spawnTile: entrance, // walk in from the office door
+          spawnTile: entrance, // walk in from the one common office door
           glowColor: hexNum(colors.accent[agent.accent]) ?? hexToNumber(member.shirt),
           onClick: (id) => useStore.getState().select(id),
         });
@@ -1711,6 +1800,7 @@ export function OfficeFloor() {
           if (width === 0 || height === 0) continue;
           app.renderer?.resize(width, height);
           camera.setViewSize(width, height);
+          nightOverlay.clear().rect(0, 0, width, height).fill({ color: 0x05060a });
         }
       });
       resize.observe(host);
@@ -1759,22 +1849,41 @@ export function OfficeFloor() {
       if (a) {
         (a as any).__glRecovery?.();
         (a as any).__resize?.disconnect?.();
+        (a as any).__panZoom?.();
         try { (a as any).__unsub?.(); } catch { /* noop */ }
         try { (a as any).__offMessage?.(); } catch { /* noop */ }
         try { clearInterval((a as any).__taskBoardPoll); } catch { /* noop */ }
         safeDestroy(a);
       }
       appRef.current = null;
+      nightOverlayRef.current = null; // destroyed along with the app/stage above
       while (host.firstChild) host.removeChild(host.firstChild);
     };
   }, [officeTheme, glGeneration, i18n.language]);
+
+  // Keep the night overlay's alpha in sync with the live app theme. Separate
+  // from the (expensive, async) init effect above on purpose — toggling light/
+  // dark should never tear down and rebuild the whole scene, just fade one
+  // rectangle. Re-runs after a GL rebuild too (glGeneration), since that
+  // creates a brand-new overlay instance that starts at alpha 0.
+  useEffect(() => {
+    if (nightOverlayRef.current) {
+      // v0.6.0: disabled per direct request — see the init effect above.
+      nightOverlayRef.current.alpha = 0;
+    }
+  }, [appTheme, glGeneration]);
 
   return (
     <div
       ref={hostRef}
       style={{
         width: '100%', height: '100%',
-        boxShadow: 'var(--cth-panel-border)',
+        // No panel chrome (border/shadow/radius) on purpose — the floor is now
+        // an open, pannable canvas, not a bordered card, so it should read as
+        // an edge-to-edge field rather than "content inside a frame." The
+        // Camera's cover-fit (see getMinZoom in Camera.ts) means this
+        // background colour is now only ever a brief pre-load fallback, not
+        // visible letterboxing.
         overflow: 'hidden',
         imageRendering: 'pixelated',
         background: hex(colors.ink[900]),

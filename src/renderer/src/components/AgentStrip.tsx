@@ -179,13 +179,13 @@ export function AgentStrip({ config }: AgentStripProps) {
                     position: 'fixed', left, bottom, width, zIndex: 350,
                     padding: 10, boxSizing: 'border-box',
                     background: 'var(--cth-paper-100)',
-                    boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 3px 3px 0 rgba(26,19,32,0.14)',
+                    boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 3px 3px 0 0 var(--cth-ink-300)',
                     display: 'flex', flexDirection: 'column', gap: 6
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span style={{
-                      fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
+                      fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '12px',
                       color: 'var(--cth-ink-500)'
                     }}>{t('agentStrip.privateNote', { name: a.name.toUpperCase() })}</span>
                     <button
@@ -217,7 +217,7 @@ export function AgentStrip({ config }: AgentStripProps) {
                       width: '100%', padding: '6px 8px',
                       border: 'none', outline: 'none', resize: 'none', boxSizing: 'border-box',
                       background: 'var(--cth-cream-100)',
-                      boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                      boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
                       fontFamily: 'var(--cth-font-mono)', fontSize: 12,
                       lineHeight: '18px', color: 'var(--cth-ink-900)'
                     }}
@@ -278,12 +278,12 @@ export function AgentStrip({ config }: AgentStripProps) {
             position: 'fixed', right: restoreMenuPos.right, bottom: restoreMenuPos.bottom,
             zIndex: 350, minWidth: 240, maxHeight: '50vh', overflowY: 'auto',
             background: 'var(--cth-cream-50)',
-            boxShadow: '0 0 0 2px var(--cth-ink-900), 3px 4px 0 0 rgba(26,19,32,0.22)',
+            boxShadow: '0 0 0 2px var(--cth-ink-900), 3px 4px 0 0 var(--cth-ink-900)',
             padding: 8, display: 'flex', flexDirection: 'column', gap: 6,
             fontFamily: 'var(--cth-font-ui)'
           }}>
             <span style={{
-              fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
+              fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '12px',
               color: 'var(--cth-ink-500)', textTransform: 'uppercase'
             }}>
               {t('agentStrip.previousSession')}
@@ -300,7 +300,7 @@ export function AgentStrip({ config }: AgentStripProps) {
                   height: 26, padding: '0 4px 0 8px',
                   fontSize: 12, color: 'var(--cth-ink-900)',
                   background: 'var(--cth-paper-100)',
-                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)'
                 }}
               >
                 <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

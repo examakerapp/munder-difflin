@@ -25,11 +25,11 @@ const PROVIDER_LABEL: Record<LocalSkill['provider'], string> = {
 function Chip({ text, tone = 'quiet' }: { text: string; tone?: 'quiet' | 'accent' }) {
   return (
     <span style={{
-      fontSize: 10, fontFamily: 'var(--cth-font-display)', letterSpacing: 0.4,
+      fontSize: 13, fontFamily: 'var(--cth-font-display)', letterSpacing: 0.4,
       padding: '2px 6px', flexShrink: 0, textTransform: 'uppercase',
       color: 'var(--cth-ink-900)',
       background: tone === 'accent' ? 'var(--cth-mint-light)' : 'var(--cth-cream-200)',
-      boxShadow: `inset 0 0 0 1px ${tone === 'accent' ? 'var(--cth-mint)' : 'var(--cth-ink-300)'}`
+      boxShadow: `inset 0 0 0 1px ${tone === 'accent' ? 'var(--cth-mint)' : 'var(--cth-ink-300)'}, 2px 2px 0 0 ${tone === 'accent' ? 'var(--cth-mint)' : 'var(--cth-ink-300)'}`
     }}>{text}</span>
   );
 }
@@ -150,16 +150,17 @@ export function SkillsTab({ agentCwd }: { agentCwd?: string }) {
       kind === 'primary' ? 'var(--cth-mint-light)'
       : kind === 'danger' ? 'var(--cth-coral-light)'
       : 'var(--cth-cream-200)',
-    boxShadow: `inset 0 0 0 1px ${
-      kind === 'primary' ? 'var(--cth-mint)' : kind === 'danger' ? 'var(--cth-coral)' : 'var(--cth-ink-300)'
-    }`
+    boxShadow: (() => {
+      const c = kind === 'primary' ? 'var(--cth-mint)' : kind === 'danger' ? 'var(--cth-coral)' : 'var(--cth-ink-300)';
+      return `inset 0 0 0 1px ${c}, 2px 2px 0 0 ${c}`;
+    })()
   });
 
   const tabBtn = (m: Mode, label: string): React.CSSProperties => ({
     padding: '4px 10px 3px', border: 'none', cursor: 'pointer',
     fontFamily: 'var(--cth-font-ui)', fontSize: 12,
     background: mode === m ? 'var(--cth-lemon-light)' : 'var(--cth-cream-200)',
-    boxShadow: `inset 0 0 0 1px ${mode === m ? 'var(--cth-lemon)' : 'var(--cth-ink-300)'}`,
+    boxShadow: `inset 0 0 0 1px ${mode === m ? 'var(--cth-lemon)' : 'var(--cth-ink-300)'}, 2px 2px 0 0 ${mode === m ? 'var(--cth-lemon)' : 'var(--cth-ink-300)'}`,
     color: 'var(--cth-ink-900)'
   });
 
@@ -183,7 +184,7 @@ export function SkillsTab({ agentCwd }: { agentCwd?: string }) {
           style={{
             flex: 1, minWidth: 140, padding: '4px 8px',
             background: 'var(--cth-paper-100)', color: 'var(--cth-ink-900)',
-            border: 'none', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+            border: 'none', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
             fontFamily: 'var(--cth-font-ui)', fontSize: 12
           }}
         />
@@ -195,7 +196,7 @@ export function SkillsTab({ agentCwd }: { agentCwd?: string }) {
             style={{
               padding: '4px 6px', maxWidth: 210,
               background: 'var(--cth-paper-100)', color: 'var(--cth-ink-900)',
-              border: 'none', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+              border: 'none', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
               fontFamily: 'var(--cth-font-ui)', fontSize: 12
             }}
           >
@@ -210,7 +211,7 @@ export function SkillsTab({ agentCwd }: { agentCwd?: string }) {
             style={{
               padding: '4px 6px', maxWidth: 190,
               background: 'var(--cth-paper-100)', color: 'var(--cth-ink-900)',
-              border: 'none', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+              border: 'none', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
               fontFamily: 'var(--cth-font-ui)', fontSize: 12
             }}
           >
@@ -295,7 +296,7 @@ export function SkillsTab({ agentCwd }: { agentCwd?: string }) {
             {catalogMeta?.error && (
               <div style={{
                 marginBottom: 8, padding: 8, fontSize: 12, color: 'var(--cth-ink-900)',
-                background: 'var(--cth-coral-light)', boxShadow: 'inset 0 0 0 1px var(--cth-coral)'
+                background: 'var(--cth-coral-light)', boxShadow: 'inset 0 0 0 1px var(--cth-coral), 2px 2px 0 0 var(--cth-coral)'
               }}>
                 {t('skillsTab.cachedCopy', { error: catalogMeta.error })}
               </div>
@@ -349,7 +350,7 @@ export function SkillsTab({ agentCwd }: { agentCwd?: string }) {
 
 const rowStyle: React.CSSProperties = {
   display: 'flex', flexDirection: 'column', gap: 5, padding: 10,
-  background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+  background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-300)',
   color: 'var(--cth-ink-900)'
 };
 

@@ -125,7 +125,7 @@ export function ThreadsPanel({ agentId }: ThreadsPanelProps) {
                         <span style={{ fontFamily: 'var(--cth-font-ui)', fontSize: 13, fontWeight: 700, color: 'var(--cth-ink-900)' }}>{m.from}</span>
                         <span style={{
                           fontFamily: 'var(--cth-font-ui)', fontSize: 12, lineHeight: '16px', padding: '0 6px',
-                          background: 'var(--cth-cream-100)', boxShadow: `inset 0 0 0 1px ${ACT_COLOR[m.act] ?? 'var(--cth-ink-300)'}`,
+                          background: 'var(--cth-cream-100)', boxShadow: `inset 0 0 0 1px ${ACT_COLOR[m.act] ?? 'var(--cth-ink-300)'}, 2px 2px 0 0 ${ACT_COLOR[m.act] ?? 'var(--cth-ink-300)'}`,
                           color: 'var(--cth-ink-900)'
                         }}>{m.act}</span>
                         <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--cth-ink-500)' }}>
@@ -156,7 +156,7 @@ export function ThreadsPanel({ agentId }: ThreadsPanelProps) {
                       resize: 'vertical', width: '100%', boxSizing: 'border-box', padding: '6px 8px',
                       fontFamily: 'var(--cth-font-ui)', fontSize: 13, lineHeight: '18px',
                       color: 'var(--cth-ink-900)', background: 'var(--cth-cream-50)',
-                      border: 'none', boxShadow: 'inset 0 0 0 2px var(--cth-ink-700)'
+                      border: 'none', boxShadow: 'inset 0 0 0 2px var(--cth-ink-700), 2px 2px 0 0 var(--cth-ink-700)'
                     }}
                   />
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

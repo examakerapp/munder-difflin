@@ -93,6 +93,10 @@
     "noteAria": "{{name}} 的笔记"
   },
   "askMe": {
+    "denyTitle": "拒绝此项 — 上方输入的内容将作为理由一并发送",
+    "approveTitle": "批准此项 — 上方输入的内容将作为理由一并发送",
+    "deny": "拒绝",
+    "approve": "批准",
     "emptyTitle": "现在没有需要你的事。🌿",
     "emptySub": "当团队把任务卡在你的输入上——要回答的问题，或只有你能完成的待办——就会出现在这里（也会出现在楼层的「问我」看板上）。",
     "openDetail": "打开完整任务详情",
@@ -128,8 +132,30 @@
   "sidebar": {
     "terminal": "终端",
     "git": "Git",
-    "messages": "消息",
+    "messages": "聊天",
     "traces": "追踪"
+  },
+  "hiveChat": {
+    "orchestrator": "调度者",
+    "sendFailed": "消息发送失败。",
+    "you": "你",
+    "everyone": "所有人",
+    "unknown": "未知",
+    "all": "全部",
+    "search": "搜索…",
+    "clear": "清除",
+    "oneThread": "仅显示一个会话",
+    "loading": "正在加载对话…",
+    "noMatches": "没有符合该筛选条件的消息。",
+    "empty": "暂无消息。智能体之间的对话会实时显示在这里。",
+    "to": "发给 {{name}}",
+    "needsReply": "需要回复",
+    "less": "收起",
+    "more": "展开",
+    "viewThread": "查看会话",
+    "composerPlaceholder": "发消息给 {{name}}…",
+    "send": "发送",
+    "sending": "发送中…"
   },
   "toolWaterfall": {
     "fresh": "新计 {{tokens}}t",
@@ -378,6 +404,7 @@
     "unsavedWarning": "你有未保存的设置。仍要关闭并放弃这些更改吗？"
   },
   "commandCenter": {
+    "asksWaiting": "{{count}} 项等待你处理",
     "title": "命令中心",
     "runsTheFloor": "{{name}} 掌管楼层",
     "deliveryPaused": "已暂停",
@@ -388,6 +415,7 @@
     "ide": "IDE",
     "tabs": {
       "terminal": "终端",
+      "chat": "聊天",
       "floor": "监控",
       "tasks": "任务",
       "human": "问我",
@@ -475,6 +503,10 @@
     "openIdeAria": "打开 IDE"
   },
   "addAgent": {
+    "permission": "权限",
+    "permissionAsk": "执行风险操作前先询问我",
+    "permissionAskHint": "使该代理不受自动模式影响：它会在自己的终端中逐项等待授权。",
+    "permissionAskHintAutoOff": "自动模式已关闭，所有代理都会询问。此选项为该代理固定该设置。",
     "title": "添加智能体",
     "hireImported": "已导入 hire：",
     "byAuthor": " · 作者 {{author}}",

@@ -14,42 +14,51 @@ import { Icon } from './Icon';
 import { PixelButton } from './PixelButton';
 
 // ─── Theme matching CTH palette ─────────────────────────────────────────────
+// v0.6.0: re-stated to match the current Composer warm-cream/orange tokens
+// (tokens.css --cth-paper-100/--cth-ink-900/etc.) — this was still on the old
+// v0.5.0 cool blue-gray palette, the same drift PtyTerminalView.tsx keeps
+// hitting. CodeMirror's theme object is built once from literal values (it
+// can't read CSS custom properties at definition time), so these are
+// restated hex, not a token reference. Still light-only ({ dark: false }
+// below) — a pre-existing choice, not something this pass changes; making it
+// follow the app's dark toggle would need a reconfigurable Compartment, a
+// bigger change than a color fix.
 const cthEditorTheme = EditorView.theme({
   '&': {
-    background: '#FCFAF0',
-    color: '#1A1320',
+    background: '#FFFFFF',       // --cth-paper-100
+    color: '#151515',            // --cth-ink-900
     height: '100%',
-    fontFamily: 'VT323, "JetBrains Mono", monospace',
-    fontSize: '16px'
+    fontFamily: 'var(--cth-font-mono)',
+    fontSize: '14px'
   },
-  '.cm-content': { caretColor: '#FF6B6B', padding: '8px 0' },
-  '.cm-cursor, .cm-dropCursor': { borderLeftColor: '#FF6B6B', borderLeftWidth: '2px' },
+  '.cm-content': { caretColor: '#F14F58', padding: '8px 0' },          // --cth-coral
+  '.cm-cursor, .cm-dropCursor': { borderLeftColor: '#F14F58', borderLeftWidth: '2px' },
   '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto' },
   '.cm-gutters': {
-    background: '#F0EAD2',
-    color: '#6B5878',
-    borderRight: '1px solid #D9CFE0'
+    background: '#EEEFE9',       // --cth-cream-100
+    color: '#6B6A67',            // --cth-ink-500
+    borderRight: '1px solid #E7E6E0' // --cth-ink-100
   },
-  '.cm-activeLineGutter': { background: '#FFEC99' },
-  '.cm-activeLine': { background: 'rgba(255, 217, 61, 0.10)' },
-  '.cm-selectionBackground, ::selection': { background: '#FFEC99 !important' },
-  '.cm-searchMatch': { background: '#A8E6E0', outline: '1px solid #1A1320' },
-  '.cm-searchMatch.cm-searchMatch-selected': { background: '#FFD93D' }
+  '.cm-activeLineGutter': { background: '#FBEBC7' },  // --cth-lemon-light
+  '.cm-activeLine': { background: 'rgba(228, 166, 4, 0.10)' }, // --cth-lemon, low alpha
+  '.cm-selectionBackground, ::selection': { background: '#FBEBC7 !important' },
+  '.cm-searchMatch': { background: '#DDE5FF', outline: '1px solid #151515' }, // --cth-sky-light / --cth-ink-900
+  '.cm-searchMatch.cm-searchMatch-selected': { background: '#E4A604' } // --cth-lemon
 }, { dark: false });
 
 const cthSyntax = HighlightStyle.define([
-  { tag: tags.keyword,        color: '#B197FC' },
-  { tag: tags.operator,       color: '#6B5878' },
-  { tag: [tags.string, tags.regexp], color: '#6BCF7F' },
-  { tag: [tags.number, tags.bool, tags.null], color: '#FF6B6B' },
-  { tag: tags.comment,        color: '#6B5878', fontStyle: 'italic' },
-  { tag: tags.variableName,   color: '#1A1320' },
-  { tag: tags.function(tags.variableName), color: '#FFA07A' },
-  { tag: [tags.typeName, tags.className], color: '#4ECDC4' },
-  { tag: tags.propertyName,   color: '#3D2E4A' },
-  { tag: tags.heading,        color: '#1A1320', fontWeight: 'bold' as any },
-  { tag: tags.link,           color: '#4ECDC4', textDecoration: 'underline' as any },
-  { tag: tags.meta,           color: '#6B5878' }
+  { tag: tags.keyword,        color: '#A56EFF' }, // --cth-lilac
+  { tag: tags.operator,       color: '#6B6A67' }, // --cth-ink-500
+  { tag: [tags.string, tags.regexp], color: '#529A0A' }, // --cth-mint
+  { tag: [tags.number, tags.bool, tags.null], color: '#F14F58' }, // --cth-coral
+  { tag: tags.comment,        color: '#6B6A67', fontStyle: 'italic' }, // --cth-ink-500
+  { tag: tags.variableName,   color: '#151515' }, // --cth-ink-900
+  { tag: tags.function(tags.variableName), color: '#F54E01' }, // --cth-primary
+  { tag: [tags.typeName, tags.className], color: '#1D4AFF' }, // --cth-sky
+  { tag: tags.propertyName,   color: '#43423D' }, // --cth-ink-700
+  { tag: tags.heading,        color: '#151515', fontWeight: 'bold' as any }, // --cth-ink-900
+  { tag: tags.link,           color: '#1D4AFF', textDecoration: 'underline' as any }, // --cth-sky
+  { tag: tags.meta,           color: '#6B6A67' } // --cth-ink-500
 ]);
 
 function extensionsFor(filename: string) {
@@ -158,7 +167,7 @@ export function CodeEditor({
           <Icon name="code" size={2} />
         </div>
         <div style={{
-          fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '14px',
+          fontFamily: 'var(--cth-font-display)', fontSize: 11, lineHeight: '14px',
           textTransform: 'uppercase', letterSpacing: 1,
           color: 'var(--cth-ink-700)'
         }}>
@@ -252,7 +261,7 @@ const editorBtn: React.CSSProperties = {
   color: 'var(--cth-ink-900)',
   background: 'var(--cth-cream-100)',
   border: 'none',
-  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100), 2px 2px 0 0 var(--cth-ink-100)',
   cursor: 'pointer',
   display: 'inline-flex', alignItems: 'center', gap: 4
 };

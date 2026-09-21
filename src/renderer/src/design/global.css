@@ -20,11 +20,14 @@ html, body, #root {
 }
 
 body {
-  /* tiny diagonal cream noise — pure CSS, no images */
+  /* tiny diagonal noise — pure CSS, no images. v0.4.7: neutralized from the
+     old yellow-tinted rgba(232,217,160,.20) to match the new graphite base
+     surfaces, and toned down further since a busy textured background reads
+     as dated against the calmer palette. */
   background-image:
     repeating-linear-gradient(
       45deg,
-      rgba(232, 217, 160, 0.20) 0 1px,
+      rgba(120, 118, 110, 0.035) 0 1px,
       transparent 1px 6px
     );
 }
@@ -69,6 +72,15 @@ canvas, img, svg { image-rendering: pixelated; image-rendering: crisp-edges; }
   outline-offset: 2px;
 }
 
+/* v0.6.0: PixelButton's own focus ring, matching design-system.html's
+   `.btn3d:focus-visible { outline: 3px solid var(--orange); outline-offset:
+   2px; }` exactly — thicker and brand-colored, overriding the generic ink
+   ring above for this one component. */
+.cth-btn3d:focus-visible {
+  outline: 3px solid var(--cth-primary);
+  outline-offset: 2px;
+}
+
 /* Text inputs — resting border faint, focused border dark and thicker.
    The resting 1px ink-100 is deliberately quiet so a panel full of boxes stays
    calm, but that left NOTHING saying which box has the keyboard: these inputs
@@ -80,9 +92,21 @@ canvas, img, svg { image-rendering: pixelated; image-rendering: crisp-edges; }
    click into the box. Both :focus and :focus-visible: a textarea you clicked
    into is exactly as focused as one you tabbed into, and here we WANT the mouse
    case — it is the one the founder is looking at while typing. */
-.cth-input { box-shadow: inset 0 0 0 1px var(--cth-ink-100); }
+/* v0.6.0: rounded corners, matching the radius scale PixelButton/PixelPanel
+   already use — inputs were the one control left with hard corners. Resting
+   border bumped ink-100 -> ink-300 to match design-system.html's default
+   field state, which is clearly visible at rest (not just on focus). */
+.cth-input { box-shadow: inset 0 0 0 1px var(--cth-ink-300); border-radius: var(--cth-radius-sm); }
+/* v0.6.0: focus ring is brand orange (design-system.html's field-focus
+   pattern: `border-color: var(--orange); box-shadow: 0 0 0 3px var(--orange-100)`)
+   instead of a plain dark ink thickening — every focused input/textarea in
+   the app now signals "this is the active field" the same way the mockup
+   does. Kept as an inset ring (not an outer glow) so geometry still doesn't
+   shift on focus. */
 .cth-input:focus,
-.cth-input:focus-visible { box-shadow: inset 0 0 0 2px var(--cth-ink-700); }
+.cth-input:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--cth-primary), inset 0 0 0 4px var(--cth-primary-soft);
+}
 
 /* Custom scrollbar — chunky, pixel-feel */
 ::-webkit-scrollbar { width: 12px; height: 12px; }
@@ -159,12 +183,15 @@ canvas, img, svg { image-rendering: pixelated; image-rendering: crisp-edges; }
 }
 
 /* Settings (gear) button in the title bar — a clear bordered chip with a
-   neo-brutalist hover (lemon fill + offset shadow) so it reads as a button. */
+   neo-brutalist hover (fill + offset shadow) so it reads as a button.
+   v0.4.7: kept the exact mechanic (the user liked it), only recolored from
+   --cth-lemon to the new --cth-primary — lemon is one of the six
+   agent/status accents and a UI hover shouldn't borrow an identity color. */
 .cth-settings-btn { transition: background 80ms steps(2), box-shadow 80ms steps(2), transform 80ms steps(2); }
 .cth-settings-btn:hover {
-  background: var(--cth-lemon) !important;
-  box-shadow: inset 0 0 0 1px var(--cth-ink-300), 2px 2px 0 0 var(--cth-ink-900) !important;
-  transform: translate(-1px, -1px);
+  background: var(--cth-primary) !important;
+  box-shadow: inset 0 0 0 1px var(--cth-ink-300), 3px 3px 0 0 var(--cth-ink-900) !important;
+  transform: translate(-1.5px, -1.5px);
 }
 .cth-settings-btn:active {
   transform: translate(0, 0);

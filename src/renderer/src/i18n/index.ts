@@ -18,6 +18,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { DEFAULT_GOD_NAME } from '@shared/godIdentity';
+import { rebrand } from '@shared/brand';
 import en from './locales/en.json';
 import zhCN from './locales/zh-CN.json';
 import ar from './locales/ar.json';
@@ -107,10 +108,18 @@ export function setLanguage(lng: string): void {
 void i18n
   .use(initReactI18next)
   .init({
+    // Every bundled string passes through rebrand() on the way in, so the UI
+    // never shows upstream's product name. Done here rather than by editing the
+    // locale JSON because those files are upstream's and change often: rewriting
+    // ~24 of their lines would put a merge conflict in front of every future
+    // rebase, for no visible difference. It also means a NEW upstream string
+    // carrying the old name is renamed automatically instead of being missed.
+    // rebrand() matches only the spaced display form, so ids, the
+    // munderdifflin:// scheme and munderdiffl.in URLs are untouched.
     resources: {
-      en: { translation: en },
-      'zh-CN': { translation: zhCN },
-      ar: { translation: ar }
+      en: { translation: rebrand(en) },
+      'zh-CN': { translation: rebrand(zhCN) },
+      ar: { translation: rebrand(ar) }
     },
     lng: detectLanguage(),
     fallbackLng: 'en',

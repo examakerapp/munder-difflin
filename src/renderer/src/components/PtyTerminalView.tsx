@@ -40,75 +40,54 @@ const zoomBtnStyle: CSSProperties = {
   padding: 0
 };
 
-// Light theme — cream paper. The ANSI "white" / "yellow" / bright slots are
-// remapped to readable dark inks: programs that print white or pale-yellow text
-// (expecting a dark terminal) were previously invisible on the cream background.
-// A single ANSI slot has to serve both roles — coloured *foreground* on cream and
-// a coloured *background* under the dark default ink — which no fixed luminance
-// can satisfy at once. The terminal's `minimumContrastRatio` (see terminalPool.ts)
-// dynamically adjusts the per-cell foreground to keep both roles legible; these
-// values are tuned so the colours stay recognisable and read well natively. The
-// green/yellow are kept deep enough to read as text on cream (the brighter
-// variants are the lighter shades, per terminal convention).
-const lightTheme = {
-  background: '#FCFAF0',
-  foreground: '#1A1320',
-  cursor: '#D96A62',
-  cursorAccent: '#FCFAF0',
-  selectionBackground: '#FFEC99',
-  selectionForeground: '#1A1320',
-  black:        '#1A1320',
-  red:          '#D1453B',
-  green:        '#20904B',    // deep green → readable as text on cream
-  yellow:       '#9C6B00',    // deep amber → readable as text on cream
-  blue:         '#2B6CB0',
-  magenta:      '#8A5CF0',
-  cyan:         '#1F9C94',
-  white:        '#3A2F44',   // default "white" text → dark, so it's visible
-  brightBlack:  '#6B5878',
-  brightRed:    '#E0584E',
-  brightGreen:  '#2E9E54',
-  brightYellow: '#B8860B',
-  brightBlue:   '#3B7DC4',
-  brightMagenta:'#9B72F2',
-  brightCyan:   '#2BA89F',
-  brightWhite:  '#1A1320'
-};
+// v0.6.0: the terminal palette is now READ LIVE from the same --cth-* custom
+// properties every other surface uses, instead of a hand-duplicated copy of
+// their values. xterm can't read CSS variables itself (it wants a plain
+// object of literal colours), so this resolves them once per theme change —
+// but from the actual current tokens.css, not a snapshot that silently goes
+// stale the next time the palette moves (which is exactly what happened here
+// twice before: this file's own prior comments record it happening at v0.5.0
+// after it already happened once at v0.4.7).
+function cssVar(name: string, fallback: string): string {
+  if (typeof document === 'undefined') return fallback;
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
 
-// Dark theme — mirrors the app's dark surface ramp (tokens.css
-// data-cth-theme='dark'). xterm takes literal colours and cannot read CSS
-// custom properties, so these values are RE-STATED rather than referenced, and
-// drift the moment the tokens move: this set was still on the pre-readability
-// ramp (background #1D1C21, the old paper-100) after tokens.css dropped to
-// a softer ground, which would have left every terminal sitting a visible step
-// apart from the panel holding it. Muted-professional ANSI: recognizable hues, no
-// fluorescing on the dark ground; brights are one legible step up, not pastels.
-const darkTheme = {
-  background: '#1A1A1F',        // = --cth-paper-100
-  foreground: '#DEDBD6',        // = --cth-ink-900
-  cursor: '#E08C82',
-  cursorAccent: '#1A1A1F',
-  selectionBackground: '#37363F',
-  selectionForeground: '#DEDBD6',
-  black:        '#222229',
-  red:          '#E08C82',
-  green:        '#74C096',
-  yellow:       '#CFAA57',
-  blue:         '#6FB3C4',
-  magenta:      '#A896E3',
-  cyan:         '#6FB3C4',
-  white:        '#DEDBD6',
-  brightBlack:  '#96919F',
-  brightRed:    '#EBA39C',
-  brightGreen:  '#96CDA9',
-  brightYellow: '#E5C87E',
-  brightBlue:   '#8FC5D1',
-  brightMagenta:'#C0B3EB',
-  brightCyan:   '#8FC5D1',
-  brightWhite:  '#EFEDE9'
-};
+// No semantic token covers terminal cyan (the six agent/status accents are
+// coral/mint/sky/lemon/lilac/peach) — this is the one fixed, non-tokenized
+// pair in the palette, chosen to sit well against both surfaces.
+const FIXED_CYAN: Record<PtyTheme, string> = { light: '#1F9C94', dark: '#6FB3C4' };
 
-const THEMES: Record<PtyTheme, typeof lightTheme> = { light: lightTheme, dark: darkTheme };
+function buildTerminalTheme(theme: PtyTheme) {
+  const red = cssVar('--cth-coral', '#F14F58');
+  const green = cssVar('--cth-mint', '#529A0A');
+  const yellow = cssVar('--cth-lemon', '#E4A604');
+  const blue = cssVar('--cth-sky', '#1D4AFF');
+  const magenta = cssVar('--cth-lilac', '#A56EFF');
+  const cyan = FIXED_CYAN[theme];
+  const background = cssVar('--cth-paper-100', theme === 'dark' ? '#24262D' : '#FFFFFF');
+  const foreground = cssVar('--cth-ink-900', theme === 'dark' ? '#F3F1EC' : '#151515');
+  return {
+    background,
+    foreground,
+    cursor: cssVar('--cth-primary', '#F54E01'),
+    cursorAccent: background,
+    selectionBackground: cssVar('--cth-primary-soft', '#FFF1E6'),
+    selectionForeground: foreground,
+    black: theme === 'dark' ? cssVar('--cth-ink-100', '#33353D') : foreground,
+    red, green, yellow, blue, magenta, cyan,
+    white: cssVar('--cth-ink-700', theme === 'dark' ? '#CFCDC6' : '#43423D'),
+    brightBlack: cssVar('--cth-ink-500', '#6B6A67'),
+    brightRed: red,
+    brightGreen: green,
+    brightYellow: yellow,
+    brightBlue: blue,
+    brightMagenta: magenta,
+    brightCyan: cyan,
+    brightWhite: theme === 'dark' ? '#FFFFFF' : foreground
+  };
+}
 
 export interface PtyTerminalViewProps {
   ptyId: string;
@@ -143,8 +122,8 @@ export function PtyTerminalView({ ptyId, onStreamData, onUserPrompt, onToggleFul
   useEffect(() => {
     const container = hostRef.current;
     if (!container) return;
-    const entry = acquireTerminal(ptyId, THEMES[ptyThemeRef.current], fontSizeRef.current);
-    entry.term.options.theme = THEMES[ptyThemeRef.current];
+    const entry = acquireTerminal(ptyId, buildTerminalTheme(ptyThemeRef.current), fontSizeRef.current);
+    entry.term.options.theme = buildTerminalTheme(ptyThemeRef.current);
     entry.term.options.fontSize = fontSizeRef.current;
     attachTerminal(entry, container);
     entry.onData = (chunk) => onStreamDataRef.current?.(chunk);
@@ -274,13 +253,14 @@ export function PtyTerminalView({ ptyId, onStreamData, onUserPrompt, onToggleFul
   // Apply app-theme changes to the pooled terminal (persistence lives in
   // design/theme.ts — the title-bar toggle owns it).
   useEffect(() => {
-    acquireTerminal(ptyId, THEMES[ptyTheme], fontSizeRef.current).term.options.theme = THEMES[ptyTheme];
+    const theme = buildTerminalTheme(ptyTheme);
+    acquireTerminal(ptyId, theme, fontSizeRef.current).term.options.theme = theme;
   }, [ptyTheme, ptyId]);
 
   // Apply font-size (zoom) changes to the pooled terminal and re-fit cols/rows.
   useEffect(() => {
     fontSizeRef.current = fontSize;
-    const entry = acquireTerminal(ptyId, THEMES[ptyThemeRef.current], fontSize);
+    const entry = acquireTerminal(ptyId, buildTerminalTheme(ptyThemeRef.current), fontSize);
     entry.term.options.fontSize = fontSize;
     try {
       entry.fit.fit();
@@ -374,7 +354,6 @@ export function PtyTerminalView({ ptyId, onStreamData, onUserPrompt, onToggleFul
       }}>
         <span style={{
           width: 8, height: 8, background: 'var(--cth-mint)',
-          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
           animation: 'cth-pulse 1200ms steps(2, end) infinite'
         }} />
         live · pty {ptyId}

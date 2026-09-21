@@ -673,7 +673,22 @@ export class PtyManager {
         // Inherited env minus the parent Claude session's identity markers,
         // then the app's defaults and locale, then per-agent values — see
         // ptyEnv.ts for why the strip exists and why it is prefix-based.
-        env: buildPtyEnv(process.env, userPath, opts.env)
+        env: buildPtyEnv(process.env, userPath, opts.env),
+        // Windows only (node-pty ignores this elsewhere): force the legacy
+        // WinPTY backend instead of node-pty's default ConPTY. Diagnosed live
+        // (2026-09-18) — an interactive CLI's trust-confirmation prompt (a
+        // raw-mode Y/N picker) would print, then the process would exit on its
+        // own a moment later with no error output at all, only reproducing
+        // inside this app's pty — the SAME command run directly in PowerShell
+        // on the SAME machine worked fine. That points at ConPTY failing to
+        // hand the child a fully functional console on this Windows build/
+        // security-software combination, which is a known category of ConPTY
+        // issue, not something specific to this CLI. WinPTY is older and
+        // slightly slower but far more uniformly compatible, and its binaries
+        // (winpty-agent.exe/winpty.dll) already ship in node-pty's prebuilds.
+        // If a future report shows raw-mode TUIs behaving worse under WinPTY
+        // than this ConPTY failure, revert by deleting this one line.
+        ...(process.platform === 'win32' ? { useConpty: false } : {})
       });
 
       // Capture THIS session object so the proc's callbacks can tell whether the

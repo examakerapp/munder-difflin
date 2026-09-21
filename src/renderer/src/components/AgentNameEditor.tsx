@@ -14,7 +14,10 @@ export function AgentNameEditor({
   name,
   onCommit,
   uppercase = false,
-  fontSize = 'var(--cth-text-display-sm)'
+  // v0.6.0: literal 8px, not the shared --cth-text-display-sm token (now
+  // tuned for Inter at 11px) — this component keeps the pixel face on direct
+  // request, and 8px is what Press Start 2P was always sized at here.
+  fontSize = 8
 }: AgentNameEditorProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name);
@@ -88,8 +91,11 @@ export function AgentNameEditor({
           width: '100%', minWidth: 0, height: 20, padding: '1px 4px', boxSizing: 'border-box',
           border: 'none', outline: 'none',
           background: 'var(--cth-paper-100)',
-          boxShadow: `inset 0 0 0 1px var(--cth-${error ? 'coral' : 'ink-300'})`,
-          fontFamily: 'var(--cth-font-display)', fontSize,
+          boxShadow: `inset 0 0 0 1px var(--cth-${error ? 'coral' : 'ink-300'}), 2px 2px 0 0 var(--cth-${error ? 'coral' : 'ink-300'})`,
+          // v0.6.0: pixel face restored on direct request — --cth-font-display
+          // now resolves to the UI font everywhere else, so this reaches the
+          // literal pixel stack instead.
+          fontFamily: 'var(--cth-font-pixel)', fontSize,
           color: 'var(--cth-ink-900)', textTransform: uppercase ? 'uppercase' : undefined
         }}
       />
@@ -102,7 +108,7 @@ export function AgentNameEditor({
         onDoubleClick={(event) => { event.stopPropagation(); beginEditing(); }}
         title={`${name} — double-click to rename`}
         style={{
-          fontFamily: 'var(--cth-font-display)', fontSize,
+          fontFamily: 'var(--cth-font-pixel)', fontSize,
           color: 'var(--cth-ink-900)',
           minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
         }}

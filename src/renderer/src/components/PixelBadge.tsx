@@ -62,9 +62,16 @@ export function PixelBadge({ status, label, style }: PixelBadgeProps) {
         // under the controls beside it instead of holding its own width.
         flexShrink: 0,
         gap: 6,
-        padding: '2px 8px 0',
+        // Symmetric vertical padding. This was '2px 8px 0' — 2px above, none
+        // below — which pushed the dot and the label onto the bottom edge.
+        // alignItems: 'center' could not help: it centres within the content
+        // box, and the asymmetric padding was moving the box itself.
+        // 1+18+1 keeps the chip at exactly 20px, which the BOSS badge in
+        // AgentCard is deliberately matched to, so fixing the alignment does
+        // not knock the two out of line.
+        padding: '1px 8px',
         background: 'var(--cth-cream-100)',
-        boxShadow: `inset 0 0 0 1px ${colorByStatus[status]}`,
+        boxShadow: `inset 0 0 0 1px ${colorByStatus[status]}, 2px 2px 0 0 ${colorByStatus[status]}`,
         fontFamily: 'var(--cth-font-ui)',
         fontSize: 'var(--cth-text-body-sm)',
         lineHeight: '18px',
@@ -73,12 +80,16 @@ export function PixelBadge({ status, label, style }: PixelBadgeProps) {
         ...style
       }}
     >
+      {/* v0.6.0: a plain square, not the inset-ring + offset-duplicate shadow
+          this used before — at this size (8px) the "3D sticker" shadow
+          language reads as a second, misaligned square rather than
+          elevation, per direct request. Same fix applied everywhere else
+          this exact dot pattern was copy-pasted. */}
       <span
         style={{
           width: 8,
           height: 8,
-          background: colorByStatus[status],
-          boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+          background: colorByStatus[status]
         }}
       />
       {text}

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme proposals — Munder Difflin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page-bg:#e9e9ec; --page-ink:#1a1320; --page-muted:#6b6470;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--page-bg); color:var(--page-ink);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    padding:40px 24px 100px;
+  }
+  .intro{max-width:720px;margin:0 auto 48px;}
+  .intro h1{
+    font-family:"Press Start 2P",monospace; font-size:15px; line-height:1.7;
+    letter-spacing:0.5px; margin:0 0 16px;
+  }
+  .intro p{font-size:15px;line-height:1.65;color:var(--page-muted);margin:0 0 10px;}
+  .intro .note{font-size:13px;background:#fff;border:1px solid #d6d4da;padding:12px 14px;border-radius:4px;color:#43404a;}
+
+  .switcher{
+    max-width:1180px;margin:0 auto 32px;display:flex;gap:8px;flex-wrap:wrap;
+    position:sticky; top:16px; z-index:20;
+  }
+  .switcher button{
+    font-family:"Inter",sans-serif;font-size:13px;font-weight:600;
+    padding:10px 16px;border-radius:999px;border:1px solid #c7c5cc;background:#fff;
+    cursor:pointer;color:#43404a;
+  }
+  .switcher button.active{background:#1a1320;color:#fff;border-color:#1a1320;}
+
+  .stage{max-width:1180px;margin:0 auto;}
+  .theme-block{display:none;}
+  .theme-block.active{display:block;}
+
+  .theme-head{margin:0 0 18px;}
+  .theme-head h2{font-family:"Press Start 2P",monospace;font-size:13px;margin:0 0 8px;letter-spacing:0.5px;}
+  .theme-head p{margin:0;color:var(--page-muted);font-size:14px;max-width:640px;line-height:1.6;}
+
+  .swatchrow{display:flex;gap:8px;margin:16px 0 24px;flex-wrap:wrap;}
+  .swatch{width:64px;}
+  .swatch .chip{height:40px;border-radius:6px;border:1px solid rgba(0,0,0,.12);}
+  .swatch span{display:block;font-size:10px;font-family:"JetBrains Mono",monospace;color:#6b6470;margin-top:4px;text-align:center;}
+
+  /* ---- mock app shell, driven entirely by CSS vars per theme ---- */
+  .app{
+    display:grid; grid-template-columns:220px 1fr 280px; gap:1px;
+    background:var(--app-line); border-radius:10px; overflow:hidden;
+    box-shadow:0 12px 40px rgba(0,0,0,.18);
+    min-height:520px;
+  }
+  .app > div{background:var(--app-bg);}
+  .rail{background:var(--app-rail);padding:18px 14px;display:flex;flex-direction:column;gap:4px;}
+  .rail .brand{
+    font-family:"Press Start 2P",monospace;font-size:10px;color:var(--app-ink);
+    margin-bottom:18px;line-height:1.6;
+  }
+  .rail a{
+    display:block;padding:9px 10px;border-radius:6px;font-size:13px;font-weight:500;
+    color:var(--app-ink-soft);text-decoration:none;
+  }
+  .rail a.on{background:var(--app-accent-light);color:var(--app-accent-ink,var(--app-ink));font-weight:600;}
+
+  .floor{padding:20px;}
+  .floor-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .floor-top h3{margin:0;font-size:16px;color:var(--app-ink);}
+  .floor-top .btn{
+    background:var(--app-accent);color:var(--app-on-accent,#1a1320);border:none;
+    padding:9px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:default;
+  }
+
+  .tilegrid{
+    display:grid;grid-template-columns:repeat(14,1fr);gap:2px;
+    padding:14px;border-radius:8px;background:var(--floor-wall);margin-bottom:18px;
+  }
+  .tilegrid .t{aspect-ratio:1;border-radius:2px;}
+  .tilegrid .grass{background:var(--floor-grass);}
+  .tilegrid .grass2{background:var(--floor-grass2);}
+  .tilegrid .wood{background:var(--floor-wood);}
+  .tilegrid .path{background:var(--floor-path);}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .card{
+    background:var(--app-card);border-radius:8px;padding:12px;
+    box-shadow:inset 0 0 0 1px var(--app-line);
+  }
+  .card .name{font-size:13px;font-weight:600;color:var(--app-ink);margin-bottom:6px;}
+  .card .status{
+    display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--app-ink-soft);
+    font-family:"JetBrains Mono",monospace;
+  }
+  .card .dot{width:7px;height:7px;border-radius:50%;}
+
+  .side{padding:18px 16px;display:flex;flex-direction:column;gap:16px;}
+  .side h4{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--app-ink-soft);}
+  .term{
+    background:var(--app-term-bg);color:var(--app-term-ink);border-radius:6px;padding:12px;
+    font-family:"JetBrains Mono",monospace;font-size:12px;line-height:1.7;
+    box-shadow:inset 0 0 0 1px var(--app-line);
+  }
+  .term .p1{color:var(--app-accent);}
+  .notes{display:flex;flex-direction:column;gap:6px;}
+  .note{border-radius:6px;padding:8px 10px;font-size:12px;color:#1a1320;}
+
+  .darktoggle{margin:14px 0 0;font-size:12px;color:var(--page-muted);}
+  .darktoggle button{
+    font-family:"Inter",sans-serif;font-size:12px;padding:6px 12px;border-radius:6px;
+    border:1px solid #c7c5cc;background:#fff;cursor:pointer;margin-left:6px;
+  }
+  .darktoggle button.on{background:#1a1320;color:#fff;}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>THREE THEMES</h1>
+  <p>Same layout, same pixel office engine, three different color systems. Pick one, tell me to adjust a value in it, or mix pieces from two — this is a starting point, not a final vote.</p>
+  <p class="note">Scope check: the office floor's pixel art (desks, plants, carpet) is a licensed tileset image — it can't be recolored without new art, so it isn't part of this proposal. The tile grid below is a stand-in swatch to preview a cooler/warmer floor mood, not the real sprites. What actually changes with any of these is the app chrome around it: sidebar, panels, cards, buttons, terminal, status colors.</p>
+</div>
+
+<div class="switcher" id="switcher"></div>
+
+<div class="stage" id="stage"></div>
+
+<script>
+const THEMES = [
+  {
+    id: 'slate',
+    name: 'Slate Studio',
+    tagline: 'Cool neutral grey base, one confident indigo accent. The current violet-tinted ink stays — that\'s already distinctive — everything warm and yellow around it is replaced. Reads as a serious tool, not a toy.',
+    swatches: [
+      ['bg', '#F3F3F6'], ['card', '#FFFFFF'], ['ink', '#1A1320'],
+      ['accent', '#5860E0'], ['accent-lt', '#E1E3FA'],
+    ],
+    vars: {
+      '--app-bg':'#F3F3F6', '--app-rail':'#EAEAF0', '--app-card':'#FFFFFF',
+      '--app-line':'#D6D4E0', '--app-ink':'#1A1320', '--app-ink-soft':'#6B5878',
+      '--app-accent':'#5860E0', '--app-accent-light':'#E1E3FA', '--app-on-accent':'#FFFFFF',
+      '--app-term-bg':'#1E1D2A', '--app-term-ink':'#D9D3E0',
+      '--floor-wall':'#C7C4D2', '--floor-grass':'#AEB6C4', '--floor-grass2':'#9AA3B4', '--floor-wood':'#C9BFAE', '--floor-path':'#DAD6E0',
+    },
+    dark: {
+      '--app-bg':'#18181D', '--app-rail':'#1E1E24', '--app-card':'#212128',
+      '--app-line':'#33333D', '--app-ink':'#E7E4EA', '--app-ink-soft':'#9C97A8',
+      '--app-accent':'#7C84F2', '--app-accent-light':'#26263E', '--app-on-accent':'#0F0F14',
+      '--app-term-bg':'#111116', '--app-term-ink':'#D9D3E0',
+      '--floor-wall':'#2A2A33', '--floor-grass':'#3B3E4C', '--floor-grass2':'#31333E', '--floor-wood':'#3C372E', '--floor-path':'#403F49',
+    },
+    notes: [ ['dot-success','Deployed'], ['dot-thinking','Reading spec'], ['dot-working','Writing tests'] ],
+  },
+  {
+    id: 'stone',
+    name: 'Warm Stone',
+    tagline: 'Same warmth the office parody wants, minus the yellow. Base moves from cream to a grey-stone linen; accent moves from lemon to a muted plum. Feels closer to good stationery than a browser game.',
+    swatches: [
+      ['bg', '#F2EFEA'], ['card', '#FBF9F5'], ['ink', '#241C1F'],
+      ['accent', '#8D5A78'], ['accent-lt', '#EFDCE7'],
+    ],
+    vars: {
+      '--app-bg':'#F2EFEA', '--app-rail':'#E9E3DA', '--app-card':'#FBF9F5',
+      '--app-line':'#DAD2C4', '--app-ink':'#241C1F', '--app-ink-soft':'#7A6E68',
+      '--app-accent':'#8D5A78', '--app-accent-light':'#EFDCE7', '--app-on-accent':'#FFFFFF',
+      '--app-term-bg':'#28211E', '--app-term-ink':'#E7DCD0',
+      '--floor-wall':'#D8CFC0', '--floor-grass':'#B7BFA6', '--floor-grass2':'#A3AC90', '--floor-wood':'#C9A97D', '--floor-path':'#E4DAC6',
+    },
+    dark: {
+      '--app-bg':'#1C1815', '--app-rail':'#221D19', '--app-card':'#26211C',
+      '--app-line':'#3A322A', '--app-ink':'#EDE4DA', '--app-ink-soft':'#A79A8C',
+      '--app-accent':'#C084A8', '--app-accent-light':'#3A2A34', '--app-on-accent':'#1C1815',
+      '--app-term-bg':'#14110F', '--app-term-ink':'#E7DCD0',
+      '--floor-wall':'#332B24', '--floor-grass':'#3F4638', '--floor-grass2':'#353B2E', '--floor-wood':'#43362A', '--floor-path':'#463D33',
+    },
+    notes: [ ['dot-success','Deployed'], ['dot-thinking','Reading spec'], ['dot-working','Writing tests'] ],
+  },
+  {
+    id: 'deepink',
+    name: 'Deep Ink',
+    tagline: 'Dark by default. Near-charcoal-plum ground (never true black), one luminous periwinkle accent carrying every action in the app. The night-shift control room — fits an app whose whole pitch is agents working while you\'re not.',
+    swatches: [
+      ['bg', '#17171D'], ['card', '#1F1F27'], ['ink', '#E7E4EC'],
+      ['accent', '#6C8CFF'], ['accent-lt', '#25273F'],
+    ],
+    vars: {
+      '--app-bg':'#17171D', '--app-rail':'#1D1D24', '--app-card':'#1F1F27',
+      '--app-line':'#32323E', '--app-ink':'#E7E4EC', '--app-ink-soft':'#9E9AAC',
+      '--app-accent':'#6C8CFF', '--app-accent-light':'#25273F', '--app-on-accent':'#0F0F14',
+      '--app-term-bg':'#0F0F14', '--app-term-ink':'#D9D3E0',
+      '--floor-wall':'#26262F', '--floor-grass':'#33384A', '--floor-grass2':'#2A2E3D', '--floor-wood':'#3A322A', '--floor-path':'#3B3B46',
+    },
+    dark: null,
+    lightAlt: {
+      '--app-bg':'#F4F4F7', '--app-rail':'#EAEAF0', '--app-card':'#FFFFFF',
+      '--app-line':'#D8D6E0', '--app-ink':'#1A1320', '--app-ink-soft':'#6B5878',
+      '--app-accent':'#4A5FE0', '--app-accent-light':'#E3E6FB', '--app-on-accent':'#FFFFFF',
+      '--app-term-bg':'#1E1D2A', '--app-term-ink':'#D9D3E0',
+      '--floor-wall':'#D6D3DE', '--floor-grass':'#C0C6D6', '--floor-grass2':'#AEB5C8', '--floor-wood':'#CFC5B4', '--floor-path':'#E0DCE6',
+    },
+    notes: [ ['dot-success','Deployed'], ['dot-thinking','Reading spec'], ['dot-working','Writing tests'] ],
+  },
+];
+
+const STATUS_COLORS = { 'dot-success':'#5CA97A', 'dot-thinking':'#4F9FAF', 'dot-working':'#DCAB3C' };
+
+function tileGrid(){
+  const kinds = ['grass','grass2','wood','path'];
+  let html = '';
+  for(let i=0;i<56;i++){
+    const k = kinds[(i*7 + Math.floor(i/14)) % kinds.length];
+    html += `<div class="t ${k}"></div>`;
+  }
+  return html;
+}
+
+function render(){
+  const switcher = document.getElementById('switcher');
+  const stage = document.getElementById('stage');
+  switcher.innerHTML = THEMES.map((t,i)=>`<button data-i="${i}" class="${i===0?'active':''}">${t.name}</button>`).join('');
+
+  stage.innerHTML = THEMES.map((t,i)=>`
+    <section class="theme-block ${i===0?'active':''}" data-i="${i}" id="block-${t.id}">
+      <div class="theme-head">
+        <h2>${t.name}</h2>
+        <p>${t.tagline}</p>
+      </div>
+      <div class="swatchrow">
+        ${t.swatches.map(([label,hex])=>`
+          <div class="swatch">
+            <div class="chip" style="background:${hex}"></div>
+            <span>${label}<br>${hex}</span>
+          </div>`).join('')}
+      </div>
+      ${(t.dark || t.lightAlt) ? `<div class="darktoggle">Preview:
+        <button data-i="${i}" data-mode="light" class="mode-btn on">Light</button>
+        <button data-i="${i}" data-mode="dark" class="mode-btn">Dark</button>
+      </div>` : ''}
+      <div class="app" id="app-${t.id}" style="${Object.entries(t.vars).map(([k,v])=>`${k}:${v}`).join(';')}">
+        <div class="rail">
+          <div class="brand">MUNDER<br>DIFFLIN</div>
+          <a class="on" href="#">Floor</a>
+          <a href="#">Agents</a>
+          <a href="#">Triggers</a>
+          <a href="#">Tasks</a>
+          <a href="#">Inbox</a>
+          <a href="#">Settings</a>
+        </div>
+        <div class="floor">
+          <div class="floor-top">
+            <h3>The floor</h3>
+            <div class="btn">+ Add agent</div>
+          </div>
+          <div class="tilegrid">${tileGrid()}</div>
+          <div class="cards">
+            <div class="card"><div class="name">Michael — orchestrator</div><div class="status"><span class="dot" style="background:${STATUS_COLORS['dot-success']}"></span>idle, watching inbox</div></div>
+            <div class="card"><div class="name">Dwight — backend</div><div class="status"><span class="dot" style="background:${STATUS_COLORS['dot-working']}"></span>writing tests</div></div>
+            <div class="card"><div class="name">Pam — ui/ux</div><div class="status"><span class="dot" style="background:${STATUS_COLORS['dot-thinking']}"></span>reading spec</div></div>
+          </div>
+        </div>
+        <div class="side">
+          <div>
+            <h4>Terminal — dwight</h4>
+            <div class="term">
+              <div><span class="p1">$</span> npm run typecheck</div>
+              <div>no errors found</div>
+              <div><span class="p1">$</span> _</div>
+            </div>
+          </div>
+          <div>
+            <h4>Tasks</h4>
+            <div class="notes">
+              <div class="note" style="background:#f2df8a">Fix invoice PDF margin</div>
+              <div class="note" style="background:#9ecbf0">Wire up webhook retries</div>
+              <div class="note" style="background:#a8e0b0">Ship theme tokens</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  `).join('');
+
+  switcher.addEventListener('click', e=>{
+    const btn = e.target.closest('button'); if(!btn) return;
+    const i = btn.dataset.i;
+    switcher.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+    stage.querySelectorAll('.theme-block').forEach(s=>s.classList.toggle('active', s.dataset.i===i));
+  });
+
+  stage.addEventListener('click', e=>{
+    const btn = e.target.closest('.mode-btn'); if(!btn) return;
+    const t = THEMES[btn.dataset.i];
+    const app = document.getElementById(`app-${t.id}`);
+    const vars = btn.dataset.mode === 'dark' ? (t.dark || t.lightAlt) : (btn.dataset.mode === 'light' && t.lightAlt ? t.vars : t.vars);
+    const target = btn.dataset.mode === 'dark' ? (t.dark || t.lightAlt) : t.vars;
+    Object.entries(target).forEach(([k,v])=>app.style.setProperty(k,v));
+    btn.parentElement.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('on', b===btn));
+  });
+}
+
+render();
+</script>
+</body>
+</html>

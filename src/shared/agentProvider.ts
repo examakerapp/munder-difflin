@@ -699,6 +699,36 @@ export function hasAutoModeStance(args: string[], provider: AgentProvider): bool
   return args.some((a) => stance.has(a));
 }
 
+/**
+ * Add or remove an explicit `--permission-mode default` on a spawn command.
+ *
+ * The other half of `hasAutoModeStance` above, and the reason it matters: auto
+ * mode appends its bypass flag ONLY when the command does not already state a
+ * posture, so writing `--permission-mode default` is what exempts a single
+ * agent while the rest of the floor stays on auto. That mechanism already
+ * worked — it was just invisible unless you knew to hand-type the flag. This
+ * backs the Add Agent modal's "ask me before risky actions" checkbox.
+ *
+ * It only ever produces text the user could type into that field themselves,
+ * so it opens no spawn path that did not already exist.
+ *
+ * Removing strips whatever value is there, not just `default`, so unticking a
+ * command that arrived as `--permission-mode acceptEdits` leaves nothing stale
+ * behind for `hasAutoModeStance` to match on.
+ *
+ * Claude-family only by construction: providers whose auto flag is a bare
+ * on/off switch (`--yolo`, `--auto`) have no "ask" token to write, so the
+ * caller hides the control rather than producing a command that auto mode
+ * would override anyway.
+ */
+export function withPermissionStance(command: string, ask: boolean): string {
+  const stripped = command
+    .replace(/\s*--permission-mode(?:[=\s]+\S+)?/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return ask ? `${stripped} --permission-mode default`.trim() : stripped;
+}
+
 /** Returns any env vars the provider needs for non-interactive / first-run suppression. */
 export function nonInteractiveEnvForProvider(provider: AgentProvider): Record<string, string> {
   return providerPreset(provider).nonInteractiveEnv ?? {};
