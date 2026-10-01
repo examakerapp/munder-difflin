@@ -864,8 +864,18 @@ function FloorTab({ seed }: { seed: { text: string; seq: number } }) {
             {/* Non-god agents get the cross-provider model picker + restart controls
                 here. The GOD agent's model lives in the engine row below
                 (provider+model+apply), so we DON'T render this second selector for
-                it — one model picker, not two. */}
-            {!a.isGod && (
+                it — one model picker, not two.
+                God-spawned workers get neither: both controls kill + respawn the
+                PTY through the renderer, which rebuilds the command from Settings
+                (dropping the worker's own flags, e.g. --disallowedTools) and
+                revives it as a regular agent that never closes on done. Claude
+                Code's own /model switches it in place, keeping both. */}
+            {!a.isGod && a.ephemeral && (
+              <div style={{ fontSize: 11, color: 'var(--cth-ink-500)' }}>
+                {t('commandCenter.workerModelHint', { godName })}
+              </div>
+            )}
+            {!a.isGod && !a.ephemeral && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               <Select
                 value={encodeProviderModel(agentProvider, a.model)}

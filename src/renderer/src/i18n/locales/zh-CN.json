@@ -451,6 +451,7 @@
     "contextTitle": "上下文窗口：{{used}} / {{limit}} 令牌（{{pct}}%）",
     "noStatusTick": "尚无状态上报",
     "modelRestarts": "{{provider}} 模型（重启智能体）",
+    "workerModelHint": "{{godName}} 的工作智能体 — 要在任务中途更换模型，请在其终端中输入 /model。新任务使用 设置 → 默认模型。",
     "restartContinue": "重启并继续",
     "restartContinueTitle": "终止并重新生成{{name}}，恢复其当前会话——修复损坏/花屏的终端而不丢失上下文",
     "engine": "引擎：",

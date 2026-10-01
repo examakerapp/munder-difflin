@@ -451,6 +451,7 @@
     "contextTitle": "Context window: {{used}} of {{limit}} tokens ({{pct}}%)",
     "noStatusTick": "no status tick yet",
     "modelRestarts": "{{provider}} model (restarts agent)",
+    "workerModelHint": "{{godName}}’s worker — to change its model mid-task, type /model in its terminal. New tasks use Settings → Default model.",
     "restartContinue": "restart & continue",
     "restartContinueTitle": "Kill and respawn {{name}}, resuming its current conversation — fixes a corrupted/garbled terminal without losing context",
     "engine": "engine:",
