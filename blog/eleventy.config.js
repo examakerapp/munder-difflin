@@ -73,6 +73,15 @@ export default function (eleventyConfig) {
       .sort((a, b) => b.date - a.date)
   );
 
+  // Featured posts for the blog home hero, newest first. Opt a post in with
+  // `featured: true` in its frontmatter; the newest one leads the hero.
+  eleventyConfig.addCollection("featured", (api) =>
+    api
+      .getFilteredByGlob("src/posts/*.md")
+      .filter((p) => !p.data.draft && p.data.featured)
+      .sort((a, b) => b.date - a.date)
+  );
+
   // Topic clusters (categories) — derived from each post's `category` field.
   eleventyConfig.addCollection("categories", (api) => {
     const map = {};
@@ -124,6 +133,14 @@ export default function (eleventyConfig) {
   );
   eleventyConfig.addFilter("htmlDate", (d) =>
     DateTime.fromJSDate(d, { zone: "utc" }).toFormat("yyyy-LL-dd")
+  );
+  // Newest publish or update date across posts. The sitemap uses it for the
+  // home page lastmod so a rebuild on a later day does not change the file.
+  eleventyConfig.addFilter("newestPostDate", (posts) =>
+    (posts || []).reduce((max, p) => {
+      const d = new Date(p.data.updated || p.date);
+      return d > max ? d : max;
+    }, new Date(0))
   );
 
   // Reading time from rendered HTML / raw content (~225 wpm).
