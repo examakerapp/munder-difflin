@@ -67,6 +67,7 @@ import { buildWorkerLaunch } from './workerLaunch';
 import { ControlRegistry } from './control';
 import { WorkerWakeWatchdog, type WorkerWakeFacts } from './workerWake';
 import { inboxNudgeText } from '../shared/hiveNudge';
+import { buildResumeRequest, parseLiveWorkers, resumeIdFor, type LiveWorkerEntry } from '../shared/workerResume';
 import { resolveGodName } from '../shared/godIdentity';
 import { fetchHireManifest, readHireManifestFiles } from './hire';
 import { parseHireDeepLink, type HireManifest } from '../shared/hire';
@@ -364,6 +365,7 @@ const worktreeOrigins = new Map<string, string>();
 interface WorkerRec {
   workerId: string;       // == the PTY id == hive agent id (`worker-<reqId>`)
   reqId: string;          // the spawn-request id
+  reqFile: string;        // its file name in spawn-requests/.done/ (resume reads it back)
   name?: string;          // display name (for the worker tab)
   slack?: { channel: string; thread_ts: string };
   baseBranch: string;     // the branch its worktree was cut from (for ahead-of-base)
@@ -2872,6 +2874,8 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
           theme: readConfig().terminalTheme ?? 'light',
           // W3 — default-MCP consent state + the bundled skills source dir.
           mcpDefaults: readConfig().mcpDefaults,
+          // Settings → Secret files. Absent reads as on (the safe default).
+          protectSecrets: readConfig().protectSecrets !== false,
           skillsDir: skillsResourceDir(),
           // The shared palace is mutated by the agent's own `mempalace` calls, so
           // the OS sandbox must let it through (empty when memory is off).
@@ -3863,6 +3867,9 @@ function teardownAndQuit(): void {
   try { clearContextTimers(); } catch (e) { console.error('[quit] clearContextTimers:', e); }
   try { stopWebhookDoneObserver(); } catch (e) { console.error('[quit] stopWebhookDoneObserver:', e); }
   try { stopEphemeralWorkerWatcher(); } catch (e) { console.error('[quit] stopWorkerWatcher:', e); }
+  // The live set as it stands now, before any PTY dies — read at the next start
+  // to resume interrupted tasks.
+  try { persistLiveWorkers(); } catch (e) { console.error('[quit] persistLiveWorkers:', e); }
   try { integrationBroker.stop(); } catch (e) { console.error('[quit] broker.stop:', e); }
   try { hive.stopRouter(); } catch (e) { console.error('[quit] stopRouter:', e); }
   try { hookServer.stop(); } catch (e) { console.error('[quit] hookServer.stop:', e); }
@@ -4680,6 +4687,10 @@ interface SpawnRequest {
   model?: string;                                     // optional --model override (Claude)
   cwd?: string;                                        // repo the worker (and its worktree) runs in
   name?: string;                                       // display name
+  /** The job this worker is hired for (e.g. "Product and usage analyst"). Reaches
+   *  the worker's system prompt as YOUR ROLE, so a per-task worker knows its bounds
+   *  exactly as a standing agent does. Absent = the generic "worker". */
+  role?: string;
   slack?: { channel: string; thread_ts: string };     // reply target + where failures surface
   isolate?: boolean;                                   // default true (fresh worktree)
   tokenCap?: number;                                   // optional per-worker token cap (advisory P1)
@@ -4830,7 +4841,7 @@ async function processSpawnRequest(filePath: string): Promise<void> {
     id: workerId,
     name: typeof raw.name === 'string' && raw.name.trim() ? raw.name.trim() : `Worker ${reqId.slice(0, 12)}`,
     provider: raw.provider,
-    role: 'worker',
+    role: typeof raw.role === 'string' && raw.role.trim() ? raw.role.trim().slice(0, 500) : 'worker',
     cwd
   };
   // Phase 2: grant this worker a broker capability over the currently-enabled
@@ -4876,7 +4887,10 @@ async function processSpawnRequest(filePath: string): Promise<void> {
       role: meta.role,
       worktreePath: res.worktreePath,
       character: typeof raw.character === 'string' ? raw.character : undefined,
-      accent: typeof raw.accent === 'string' ? raw.accent : undefined
+      accent: typeof raw.accent === 'string' ? raw.accent : undefined,
+      // Not restorable: after a quit the TASK is resumed as a fresh worker
+      // (queueInterruptedWorkers), so reviving this card would run it twice.
+      ephemeral: true
     });
   } catch { /* window torn down */ }
 
@@ -4884,7 +4898,7 @@ async function processSpawnRequest(filePath: string): Promise<void> {
   // tokenCap is optional plumbing (default unlimited) — only a positive finite cap is kept.
   const tokenCap = typeof raw.tokenCap === 'number' && Number.isFinite(raw.tokenCap) && raw.tokenCap > 0
     ? raw.tokenCap : undefined;
-  liveWorkers.set(workerId, { workerId, reqId, name: meta.name, slack, baseBranch, spawnedAt: Date.now(), tokenCap });
+  liveWorkers.set(workerId, { workerId, reqId, reqFile: basename(filePath), name: meta.name, slack, baseBranch, spawnedAt: Date.now(), tokenCap });
 
   // Dispatch the objective via the standard inbox path (zero new transport),
   // reusing the autonomous-request preamble so the worker gets the exact Slack
@@ -5061,14 +5075,81 @@ async function ephemeralWorkerTick(): Promise<void> {
   } catch (e) {
     console.error('[worker] tick error:', e);
   } finally {
+    persistLiveWorkers();
     workerTickRunning = false;
   }
+}
+
+/** HIVE_ROOT/live-workers.json — the workers that were live, so a task cut off
+ *  by a quit or a crash can be resumed at the next start. */
+function liveWorkersFile(): string | null {
+  const root = hive.root();
+  return root ? join(root, 'live-workers.json') : null;
+}
+let lastPersistedWorkers = '';
+/** Write the live set when it changed. Called every tick (covers a crash) and
+ *  once more in teardownAndQuit right before the PTYs are killed — the watcher
+ *  is stopped first there, so nothing rewrites the file as empty afterwards. */
+function persistLiveWorkers(): void {
+  const file = liveWorkersFile();
+  if (!file) return;
+  const entries: LiveWorkerEntry[] = [...liveWorkers.values()]
+    .filter((w) => !w.releasing)
+    .map(({ workerId, reqId, reqFile, spawnedAt }) => ({ workerId, reqId, reqFile, spawnedAt }));
+  const text = JSON.stringify(entries);
+  if (text === lastPersistedWorkers) return;
+  try {
+    writeFileSync(file + '.tmp', text);
+    renameSync(file + '.tmp', file);
+    lastPersistedWorkers = text;
+  } catch (e) { console.error('[worker] persist live workers failed:', e); }
+}
+
+/** At start-up: every worker that was live when the app last stopped and never
+ *  signalled done gets its task re-queued as a fresh worker that continues from
+ *  the task's checkpoint (see shared/workerResume). Once per task; a second
+ *  interruption is handed to god instead of looping. */
+function queueInterruptedWorkers(): void {
+  const file = liveWorkersFile();
+  const queue = spawnRequestsDir();
+  if (!file || !queue || !existsSync(file)) return;
+  let entries: LiveWorkerEntry[] = [];
+  try { entries = parseLiveWorkers(readFileSync(file, 'utf8')); } catch { /* unreadable → nothing */ }
+  // Consume the file first: whatever happens below, it is never processed twice.
+  try { unlinkSync(file); } catch { /* noop */ }
+  const resumed: string[] = [];
+  const handBack: string[] = [];
+  for (const e of entries) {
+    if (workerSignaledDone(e.workerId, e.spawnedAt)) continue; // finished just before the quit
+    const nextId = resumeIdFor(e.reqId);
+    if (!nextId) { handBack.push(`${e.reqId} — interrupted again after already being resumed once`); continue; }
+    if (existsSync(join(queue, `${nextId}.json`)) || existsSync(join(queue, '.done', `${nextId}.json`))) continue;
+    let original: Record<string, unknown>;
+    try { original = JSON.parse(readFileSync(join(queue, '.done', e.reqFile), 'utf8')) as Record<string, unknown>; }
+    catch { handBack.push(`${e.reqId} — its original request (spawn-requests/.done/${e.reqFile}) is missing`); continue; }
+    try {
+      const out = join(queue, `${nextId}.json`);
+      writeFileSync(out + '.tmp', JSON.stringify(buildResumeRequest(original, nextId), null, 2));
+      renameSync(out + '.tmp', out);
+      resumed.push(nextId);
+    } catch (err) { handBack.push(`${e.reqId} — could not queue the resume (${String(err)})`); }
+  }
+  if (!resumed.length && !handBack.length) return;
+  console.log(`[worker] resuming ${resumed.length} interrupted task(s); ${handBack.length} handed to god`);
+  informGod(
+    '[tasks interrupted by the last shutdown]',
+    [
+      resumed.length ? `Resumed automatically as fresh workers that continue from their checkpoints: ${resumed.join(', ')}.` : '',
+      handBack.length ? `Not resumed — tell the founder, with each checkpoint's next step:\n- ${handBack.join('\n- ')}` : ''
+    ].filter(Boolean).join('\n\n')
+  );
 }
 
 function startEphemeralWorkerWatcher(): void {
   if (workerWatchTimer || !hive.enabled()) return;
   const dir = spawnRequestsDir();
   if (dir) { try { mkdirSync(dir, { recursive: true }); } catch { /* noop */ } }
+  try { queueInterruptedWorkers(); } catch (e) { console.error('[worker] resume after restart failed:', e); }
   workerWatchTimer = setInterval(() => { void ephemeralWorkerTick(); }, WORKER_TICK_MS);
 }
 

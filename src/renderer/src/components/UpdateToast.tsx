@@ -40,6 +40,7 @@ import { PixelButton } from '@/components/PixelButton';
 import { PixelPanel } from '@/components/PixelPanel';
 import { summarizeReleaseNotes } from '@shared/releaseNotes';
 import { extractDropHtml } from '@shared/releaseDrop';
+import { APP_NAME } from '@shared/brand';
 import { ReleaseDrop } from '@/components/ReleaseDrop';
 import type { UpdateStatus } from '@shared/updateState';
 
@@ -233,7 +234,7 @@ export function UpdateToast() {
       </div>
       <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-700)' }}>
         {status.state === 'downloaded'
-          ? 'Restart Munder Difflin whenever you like to apply it — nothing restarts on its own.'
+          ? `Restart ${APP_NAME} whenever you like to apply it — nothing restarts on its own.`
           : 'This install can’t update itself — grab the new build from the releases page.'}
       </span>
 

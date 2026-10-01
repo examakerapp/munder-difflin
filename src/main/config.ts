@@ -200,6 +200,11 @@ export interface HarnessConfig {
    *  Off does not FAIL a queued spawn request, it declines to consume one. The
    *  request sits in HIVE_ROOT/spawn-requests until the toggle is turned on. */
   orchestratorMaySpawn: boolean;
+  /** Block every agent from reading credential files (.env*, *.pem, *.key,
+   *  id_rsa*). Default TRUE, so an absent value reads as on. Enforced by Claude
+   *  Code as a `deny` rule, which — unlike `ask` — also stops a folder-wide Grep
+   *  and still holds in auto mode. See shared/permissionBaseline.ts. */
+  protectSecrets?: boolean;
   /** The command we run when spawning a new agent. */
   defaultCommand: string;
   /** Default model for newly spawned agents (e.g. 'claude-sonnet-4-6[1m]'); unset = CLI default. */
@@ -426,6 +431,7 @@ const DEFAULTS: HarnessConfig = {
   registeredRepos: [],
   autoMode: true,
   orchestratorMaySpawn: false,
+  protectSecrets: true,
   defaultCommand: 'claude',
   godProvider: 'claude',
   godModel: 'claude-opus-4-8',

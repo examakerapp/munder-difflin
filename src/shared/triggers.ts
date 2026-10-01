@@ -25,6 +25,8 @@
  *   communication-only  — informational traffic flows; anything that asks the hive
  *                         to *act* (a directive) waits for approval.
  */
+import { APP_NAME } from './brand';
+
 export type TriggerMode = 'strict' | 'allow-all' | 'communication-only';
 
 export const TRIGGER_MODES: { value: TriggerMode; label: string; blurb: string }[] = [
@@ -214,7 +216,7 @@ export const DEFAULT_ORG_TRIGGER: OrgTriggerConfig = {
 /** Copy shown under the org key field. Kept here so Settings and Triggers agree. */
 export const CLONE_NODE_BLURB =
   'Set an organisation key and your teammates can message your clone node — the copy of '
-  + 'Munder Difflin running on your machine. Each teammate runs their own, so an org key '
+  + APP_NAME + ' running on your machine. Each teammate runs their own, so an org key '
   + 'is how two installs find each other.';
 
 /* ──────────────────────────── trigger history ────────────────────────────── */

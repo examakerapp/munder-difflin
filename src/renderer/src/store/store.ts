@@ -108,6 +108,10 @@ export interface Agent {
    *  positional seed. useHive types it once after boot-grace then clears it.
    *  Ephemeral spawn state — not persisted. (ondev-b) */
   seedPrompt?: string;
+  /** A god-spawned per-task worker. Never restorable: if the app closes under
+   *  it, main resumes the TASK as a fresh worker from its checkpoint, so
+   *  reviving this card as well would run the task twice. */
+  ephemeral?: boolean;
 }
 
 export interface FeedEntry {
@@ -968,9 +972,10 @@ export const useStore = create<State>((set, get) => ({
       if (agents.length === s.agents.length) return s;
       // Workers whose terminal died with the previous session become restorable
       // (full spawn recipe retained) instead of silently vanishing. God and the
-      // prep assistant are excluded — they auto-respawn at boot.
+      // prep assistant are excluded — they auto-respawn at boot — and so are
+      // god-spawned workers, whose task main resumes as a fresh worker.
       const dead = s.agents.filter(
-        (a) => a.ptyId && !live.has(a.ptyId) && !a.isGod && !a.isAssistant
+        (a) => a.ptyId && !live.has(a.ptyId) && !a.isGod && !a.isAssistant && !a.ephemeral
       );
       const restorableAgents = [
         ...s.restorableAgents.filter((r) => !dead.some((d) => d.id === r.id)),

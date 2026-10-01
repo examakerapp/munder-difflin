@@ -505,8 +505,11 @@
   "addAgent": {
     "permission": "Permission",
     "permissionAsk": "Ask me before risky actions",
-    "permissionAskHint": "Exempts this agent from Auto mode: it stops for per-tool approval in its own terminal.",
-    "permissionAskHintAutoOff": "Auto mode is already off, so every agent asks. This pins the setting for this agent.",
+    "permissionAskHint": "Exempts this agent from Auto mode: routine work runs on its own, and it stops to ask before anything risky.",
+    "permissionAskHintAutoOff": "Auto mode is off, so every agent already asks before risky actions. This pins it for this agent.",
+    "tools": "Tools",
+    "noFileEdits": "Never edit existing files",
+    "noFileEditsHint": "Removes the Edit tool, so this agent cannot rewrite code or documents. It can still create files in its own workspace — the hive needs that for messages and memory — so set the working directory to where it should be allowed to write.",
     "title": "ADD AGENT",
     "hireImported": "hire imported:",
     "byAuthor": " · by {{author}}",

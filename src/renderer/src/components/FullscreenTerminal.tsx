@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { APP_NAME } from '@shared/brand';
 import { PixelBadge } from './PixelBadge';
 import { PixelButton } from './PixelButton';
 import { PtyTerminalView } from './PtyTerminalView';
@@ -322,7 +323,7 @@ export function FullscreenTerminal({ config }: FullscreenTerminalProps) {
           // --cth-font-display now resolves to the UI font everywhere else.
           fontFamily: 'var(--cth-font-pixel)', fontSize: 9, lineHeight: '20px',
           color: 'var(--cth-ink-900)'
-        }}>MUNDER DIFFLIN · FOCUS MODE</span>
+        }}>{APP_NAME.toUpperCase()} · FOCUS MODE</span>
         {/* Same top-right controls as the main title bar — fullscreen covers
             it, so theme / exit-fullscreen / IDE must live here too. */}
         <div className="cth-titlebar-nodrag" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>

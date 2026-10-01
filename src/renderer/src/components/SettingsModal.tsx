@@ -2,6 +2,7 @@ import { useState, useEffect, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { agentModels, type HarnessConfig } from '@/store/config';
 import { useStore } from '@/store/store';
+import { APP_NAME } from '@shared/brand';
 import {
   CLONE_NODE_BLURB,
   DEFAULT_TRIGGER_MODE,
@@ -90,10 +91,10 @@ const slackLabelStyle: CSSProperties = {
 /** The exact connect walkthrough shown behind the i icon. Steps 6 & 7 spell out
  *  the both-lists requirement: subscribe to message.channels / message.groups in
  *  BOTH "Subscribe to bot events" AND "Subscribe to events on behalf of users". */
-const SLACK_CONNECT_STEPS = `Connect Munder Difflin to Slack
+const SLACK_CONNECT_STEPS = `Connect ${APP_NAME} to Slack
 
 1. api.slack.com/apps -> Create New App -> From scratch. Name it
-   "Munder Difflin" and pick your workspace.
+   "${APP_NAME}" and pick your workspace.
 2. Basic Information -> Signing Secret -> copy it into the
    "Signing secret" field here.
 3. OAuth & Permissions -> Bot Token Scopes: add
@@ -294,6 +295,14 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
     const next = !orchSpawnOn;
     setOrchSpawnOn(next);
     stage({ orchestratorMaySpawn: next } as Partial<HarnessConfig>);
+  };
+  // Default ON, so an absent value must read as on — the `!== false` shape of
+  // autoMode, because blocking credential files is the safe default.
+  const [secretsBlocked, setSecretsBlocked] = useState<boolean>(cfgX.protectSecrets !== false);
+  const toggleSecrets = async () => {
+    const next = !secretsBlocked;
+    setSecretsBlocked(next);
+    stage({ protectSecrets: next } as Partial<HarnessConfig>);
   };
   const [defaultModelSel, setDefaultModelSel] = useState<string>(cfgX.defaultModel ?? 'claude-fable-5');
   const saveDefaultModel = (id: string): void => {
@@ -1284,6 +1293,29 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                           </div>
                           <PixelButton variant={orchSpawnOn ? 'primary' : 'secondary'} size="sm" onClick={toggleOrchSpawn}>
                             {orchSpawnOn ? `me and ${godName}` : 'only me'}
+                          </PixelButton>
+                        </div>
+                      </div>
+
+                      <div style={{ height: 1, background: 'var(--cth-ink-300)', margin: '12px 0' }} />
+
+                      {/* Secret files — shared/permissionBaseline.ts. A deny rule, so it
+                          holds in auto mode and also stops a folder-wide Grep. Read at
+                          spawn: a running agent keeps its rules until it restarts. */}
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              Secret files
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              {secretsBlocked
+                                ? 'Agents cannot read .env files, keys or certificates — not even in auto mode. Applies to agents started after you save.'
+                                : 'Agents can read .env files, keys and certificates. Anything they read can end up in a report or in shared memory.'}
+                            </span>
+                          </div>
+                          <PixelButton variant={secretsBlocked ? 'primary' : 'secondary'} size="sm" onClick={toggleSecrets}>
+                            {secretsBlocked ? 'blocked' : 'readable'}
                           </PixelButton>
                         </div>
                       </div>

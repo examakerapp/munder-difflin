@@ -4,6 +4,7 @@ import { PixelPanel } from './PixelPanel';
 import { PixelButton } from './PixelButton';
 import { SpritePortrait } from './SpritePortrait';
 import { Icon } from './Icon';
+import { APP_NAME } from '@shared/brand';
 import { ProviderLogo } from './ProviderLogo';
 import { useStore, type Agent } from '@/store/store';
 import { OFFICE_CAST, DEFAULT_CHARACTER, type OfficeCharacterName } from '@/scene/office/cast';
@@ -29,7 +30,7 @@ import {
   providerPreset,
   isClaudeProvider
 } from '@/store/config';
-import { withPermissionStance } from '@shared/agentProvider';
+import { withPermissionStance, withFileEditStance, hasFileEditStance } from '@shared/agentProvider';
 import { useRtl } from '@/i18n/useDirection';
 
 const ACCENTS: AccentColorName[] = ['coral', 'mint', 'sky', 'lemon', 'lilac', 'peach'];
@@ -84,7 +85,7 @@ const DESCRIPTION_TEMPLATES: { labelKey: string; description: string; goal: stri
 // the exact JSON shape the importer accepts and ends with a fill-in section so the
 // user adds their own details (item 7). Kept in sync with the HireManifest schema
 // (src/shared/hire.ts) — provider allowlist is claude | codex | antigravity | cursor.
-const HIRE_PROMPT = `You are designing a "hire" — a ready-to-spawn AI agent for Munder Difflin, an app that runs a team of CLI coding agents. Output ONE JSON object (a hire manifest) and nothing else.
+const HIRE_PROMPT = `You are designing a "hire" — a ready-to-spawn AI agent for ${APP_NAME}, an app that runs a team of CLI coding agents. Output ONE JSON object (a hire manifest) and nothing else.
 
 Make the agent genuinely useful: give it a sharp role, a concrete standing goal, and a description that makes it behave like an expert operator of its CLI engine (Claude Code, Codex, or Antigravity/Gemini). It should know how to use the terminal, read and edit files, run and inspect commands, lean on available skills and MCP tools, keep notes in memory, and work autonomously toward its goal without hand-holding.
 
@@ -208,6 +209,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
   // than held as its own state, so it can never disagree with the field (which
   // stays hand-editable, and gets rebuilt wholesale when the model changes).
   const asksPermission = /--permission-mode[=\s]+(?!bypassPermissions\b)\S+/.test(command);
+  const blocksFileEdits = hasFileEditStance(command);
   const [description, setDescription] = useState(pendingHire?.description ?? 'a fresh harness');
   const [hireMeta, setHireMeta] = useState<HireManifest | null>(pendingHire);
 
@@ -1061,6 +1063,35 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                               {config.autoMode
                                 ? tr('addAgent.permissionAskHint')
                                 : tr('addAgent.permissionAskHintAutoOff')}
+                            </span>
+                          </span>
+                        </label>
+                      </Row>
+                    )}
+
+                    {/* Per-agent TOOL posture — the mechanical half of "this agent
+                        does not touch the code". A role says what the job is; this
+                        removes the capability, so there is nothing to talk the model
+                        out of. Writes --disallowedTools Edit,NotebookEdit.
+                        Write is deliberately left alone: outbox messages and
+                        memory.md are files the hive protocol requires this agent to
+                        create, so blocking Write would break coordination rather
+                        than protect anything (see NO_FILE_EDIT_TOOLS).
+                        Claude-family only, matching the permission control above —
+                        the other engines have no equivalent flag to write. */}
+                    {isClaudeProvider(provider) && (
+                      <Row label={tr('addAgent.tools')}>
+                        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
+                          <input
+                            type="checkbox"
+                            checked={blocksFileEdits}
+                            onChange={(e) => setCommand(withFileEditStance(command, e.target.checked))}
+                            style={{ marginTop: 3, flexShrink: 0 }}
+                          />
+                          <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-700)' }}>
+                            {tr('addAgent.noFileEdits')}
+                            <span style={{ display: 'block', color: 'var(--cth-ink-500)', fontSize: 11 }}>
+                              {tr('addAgent.noFileEditsHint')}
                             </span>
                           </span>
                         </label>

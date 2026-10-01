@@ -43,6 +43,8 @@ import { preferredAgentRole } from '../shared/agentRole';
 import { mergeTaskLedger } from '../shared/taskLedger';
 import { expandTilde } from './fs';
 import { resolveGodName } from '../shared/godIdentity';
+import { APP_NAME } from '../shared/brand';
+import { permissionBaseline } from '../shared/permissionBaseline';
 
 /** The subset of HarnessConfig the hive consumes for the default-MCP merge.
  *  Kept as a local shape so hive.ts never imports the foundation-owned config
@@ -695,6 +697,9 @@ export class HiveManager {
        *  MemPalace dir, which `mempalace` mutates). Absolute paths; ignored
        *  for providers without a sandbox. */
       extraWritableDirs?: string[];
+      /** Deny credential files to this agent — the operator's Settings toggle,
+       *  default on. See shared/permissionBaseline.ts. */
+      protectSecrets?: boolean;
     } = {}
   ): Promise<SpawnInjection> {
     const root = this.root();
@@ -962,7 +967,7 @@ export class HiveManager {
     if (sock && shim) {
       env.HIVE_SOCK = sock;
       const settingsPath = join(dir, 'settings.json');
-      this.writeJson(settingsPath, this.hookSettings(shim, meta.cwd, opts.mcpDefaults, opts.theme, this.sandboxWritableDirs(meta, dir, root, opts.extraWritableDirs)));
+      this.writeJson(settingsPath, this.hookSettings(shim, meta.cwd, opts.mcpDefaults, opts.theme, this.sandboxWritableDirs(meta, dir, root, opts.extraWritableDirs), opts.protectSecrets !== false));
       args.push('--settings', settingsPath);
     }
     return { args, env };
@@ -1143,7 +1148,7 @@ export class HiveManager {
     return Array.from(new Set(out));
   }
 
-  private hookSettings(shim: string, cwd: string, cfg: McpDefaultsMap, theme?: 'light' | 'dark', writableDirs: string[] = []): unknown {
+  private hookSettings(shim: string, cwd: string, cfg: McpDefaultsMap, theme?: 'light' | 'dark', writableDirs: string[] = [], protectSecrets = true): unknown {
     // Bundled node, NOT bare `node` — see nodeLauncherPath(). Claude runs each of
     // these through `sh -c` with a stripped PATH, where `node` is often absent.
     const cmd = this.nodeRun(shim);
@@ -1187,11 +1192,18 @@ export class HiveManager {
       // failIfUnavailable stays false: a platform without a sandbox (Windows)
       // runs as before rather than refusing to spawn.
       ...(writableDirs.length
-        ? {
-            sandbox: { enabled: true, filesystem: { allowWrite: writableDirs } },
-            permissions: { additionalDirectories: writableDirs }
-          }
+        ? { sandbox: { enabled: true, filesystem: { allowWrite: writableDirs } } }
         : {}),
+      // The permission baseline (shared/permissionBaseline.ts): routine work runs
+      // unprompted, credential files are denied while the operator's Settings
+      // toggle is on, and anything else asks. Written on EVERY spawn, so a new
+      // agent gets it with no per-agent setup. additionalDirectories stays here:
+      // it is what lets the baseline's acceptEdits mode cover the hive folders,
+      // so outbox messages and memory.md never prompt.
+      permissions: {
+        ...permissionBaseline(protectSecrets),
+        ...(writableDirs.length ? { additionalDirectories: writableDirs } : {})
+      },
       hooks: {
         Stop: [entry()],
         SubagentStop: [entry()],
@@ -1470,7 +1482,7 @@ export class HiveManager {
     // us) was invisible to every investigation.
     const rt = this.runtimeInfo();
     const runtimeLine = rt
-      ? `RUNNING BUILD: Munder Difflin v${rt.version}, ${rt.packaged ? 'packaged app' : 'local dev build'}${rt.appPath ? `, from ${rt.appPath}` : ''}. Say this version if asked which one is running, and do not assume behaviour from an older one. A local dev build inherits the launching shell's environment (umask included) where a packaged app does not, so file modes and inherited env can legitimately differ between the two. \`log.jsonl\` records an \`app-start\` event on every launch, which is how you spot a restart or a build switch.`
+      ? `RUNNING BUILD: ${APP_NAME} v${rt.version}, ${rt.packaged ? 'packaged app' : 'local dev build'}${rt.appPath ? `, from ${rt.appPath}` : ''}. Say this version if asked which one is running, and do not assume behaviour from an older one. A local dev build inherits the launching shell's environment (umask included) where a packaged app does not, so file modes and inherited env can legitimately differ between the two. \`log.jsonl\` records an \`app-start\` event on every launch, which is how you spot a restart or a build switch.`
       : '';
     // Item 11: god could not find the spawn queue. The mechanism has worked since
     // v0.4.4, but nothing told him it existed — the prompt said "spawn" without
@@ -1493,9 +1505,26 @@ export class HiveManager {
     const slackLine = meta.isGod
       ? 'SLACK REPLIES: When composing a Slack reply (or writing the `result` field of a Slack-origin kanban card), you MUST: (1) directly address what the user asked — never a bare "done"; (2) include the relevant specifics, outcome, and details; (3) format for Slack mrkdwn — open with a short *bold* headline, use bullet points for multiple items, wrap code/paths in `backtick` blocks, keep it concise (no walls of text). When finishing a Slack-origin task, always write a complete, user-facing, well-formatted `result` on the kanban card — the system posts it verbatim to Slack as the done reply.'
       : `SLACK REPLIES: If god dispatches you a task that came from Slack, it will include an exact \`"${hiveNode}" "<helper>" --channel … --thread … --text "…"\` reply command — when you finish, run it VERBATIM to post your result back to that thread yourself. The reply must be SUBSTANTIVE Slack mrkdwn (a short *bold* headline + the actual outcome/specifics/links), NEVER a bare "done".`;
+    // A1 — the hire’s ROLE, stated in the system prompt itself.
+    //
+    // It used to live ONLY in identity.md + registry.json, and nothing in this
+    // prompt ever told the agent to read that file — step 1 below names memory.md
+    // and inbox/ and stops there. So the job a human typed into Add Agent was in
+    // practice never seen by the model: a role like "write copy, never touch code"
+    // was a file on disk the agent had no reason to open, which made every role
+    // decoration rather than instruction.
+    //
+    // 🔒 Cache-safe: `role` is resolved ONCE at spawn (preferredAgentRole, before
+    // identity.md is written) and is fixed for the agent’s whole lifetime — exactly
+    // like name/id/dir/root above it — so the volatile-free invariant still holds.
+    const hiredCaps = (meta.capabilities ?? []).filter(Boolean).join(', ');
+    const roleLine = meta.role
+      ? `YOUR ROLE: ${meta.role}. That is the job you were hired to do, and it BOUNDS your work — it says what is yours and, by omission, what is not. Work outside it belongs to another agent: hand it to god rather than doing it yourself, even when you could do it. If an instruction conflicts with this role, say so and ask god instead of quietly widening your own scope.${hiredCaps ? ` Capabilities you were hired for: ${hiredCaps}.` : ''}`
+      : '';
     return [
       `You are "${meta.name}" (${meta.id}), an autonomous agent in a collaborating hive of Claude agents.`,
       `Your private workspace is ${dir}. The shared hive is ${root}. Full protocol: ${inRoot('PROTOCOL.md')}.`,
+      roleLine,
       '',
       'HIVE PROTOCOL — follow it every task:',
       `1. At the START of a task, read ${inDir('memory.md')} and EVERY file in ${inDir('inbox')} (messages other agents sent you). After handling an inbox message, move its file into ${inDir('inbox', '.done')}.`,

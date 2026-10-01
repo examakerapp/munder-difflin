@@ -700,20 +700,27 @@ export function hasAutoModeStance(args: string[], provider: AgentProvider): bool
 }
 
 /**
- * Add or remove an explicit `--permission-mode default` on a spawn command.
+ * Add or remove an explicit `--permission-mode acceptEdits` on a spawn command.
  *
  * The other half of `hasAutoModeStance` above, and the reason it matters: auto
  * mode appends its bypass flag ONLY when the command does not already state a
- * posture, so writing `--permission-mode default` is what exempts a single
+ * posture, so writing `--permission-mode acceptEdits` is what exempts a single
  * agent while the rest of the floor stays on auto. That mechanism already
  * worked — it was just invisible unless you knew to hand-type the flag. This
  * backs the Add Agent modal's "ask me before risky actions" checkbox.
  *
+ * `acceptEdits`, not `default`. Bare `default` asked about every `ls`, so the
+ * box said "risky actions" and delivered "every action". `acceptEdits` plus the
+ * spawn baseline (shared/permissionBaseline.ts) is what the label promises:
+ * routine reads and in-workspace writes run, anything else asks. It is also the
+ * mode an agent gets with auto mode OFF and no flag at all, so ticking the box
+ * and turning auto mode off now produce the same posture instead of two.
+ *
  * It only ever produces text the user could type into that field themselves,
  * so it opens no spawn path that did not already exist.
  *
- * Removing strips whatever value is there, not just `default`, so unticking a
- * command that arrived as `--permission-mode acceptEdits` leaves nothing stale
+ * Removing strips whatever value is there, not just `acceptEdits`, so unticking a
+ * command that arrived as `--permission-mode plan` leaves nothing stale
  * behind for `hasAutoModeStance` to match on.
  *
  * Claude-family only by construction: providers whose auto flag is a bare
@@ -726,7 +733,48 @@ export function withPermissionStance(command: string, ask: boolean): string {
     .replace(/\s*--permission-mode(?:[=\s]+\S+)?/g, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
-  return ask ? `${stripped} --permission-mode default`.trim() : stripped;
+  return ask ? `${stripped} --permission-mode acceptEdits`.trim() : stripped;
+}
+
+/** The tools the "never edit existing files" checkbox takes away.
+ *
+ *  Deliberately NOT `Write`. An agent creates its own outbox messages and its
+ *  memory.md through Write, so removing it breaks hive coordination rather than
+ *  protecting anything. What this stops is the agent REWRITING files that are
+ *  already there — the one thing a copy or analysis agent should never do to a
+ *  repo. WHERE it may create files is governed by its working directory, not by
+ *  this flag, so scope the cwd as well. */
+export const NO_FILE_EDIT_TOOLS = 'Edit,NotebookEdit';
+
+/**
+ * Add or remove `--disallowedTools Edit,NotebookEdit` on a spawn command.
+ *
+ * Same shape as `withPermissionStance` above, and for the same reason: it only
+ * ever produces text the user could type into that field themselves, so it opens
+ * no spawn path that did not already exist.
+ *
+ * The difference from a role or a prompt line is that this one is MECHANICAL —
+ * the engine drops a disallowed tool from the model's toolset entirely, so there
+ * is nothing for the model to decide. A role asks; this removes the capability.
+ *
+ * The value is written as ONE comma-separated token so that stripping it is
+ * unambiguous. A hand-typed space-separated list (`--disallowedTools Edit Write`)
+ * is variadic, and only its first token is removed on untick — check the field
+ * afterwards if you had typed one by hand.
+ */
+export function withFileEditStance(command: string, block: boolean): string {
+  const stripped = command
+    .replace(/\s*--disallowedTools(?:[=\s]+\S+)?/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return block ? `${stripped} --disallowedTools ${NO_FILE_EDIT_TOOLS}`.trim() : stripped;
+}
+
+/** True when the command already blocks the Edit tool. Token-aware, so an
+ *  unrelated `--disallowedTools WebFetch` does not read as "edits are blocked". */
+export function hasFileEditStance(command: string): boolean {
+  const m = command.match(/--disallowedTools(?:[=\s]+)(\S+)/);
+  return !!m && m[1].split(',').includes('Edit');
 }
 
 /** Returns any env vars the provider needs for non-interactive / first-run suppression. */

@@ -19,7 +19,7 @@ const argv = (s) => s.trim().split(/\s+/);
 
 test('ticking adds a posture auto mode will respect', () => {
   const out = withPermissionStance('claude --model claude-sonnet-5', true);
-  assert.equal(out, 'claude --model claude-sonnet-5 --permission-mode default');
+  assert.equal(out, 'claude --model claude-sonnet-5 --permission-mode acceptEdits');
   assert.equal(hasAutoModeStance(argv(out), 'claude'), true);
 });
 
@@ -31,7 +31,7 @@ test('unticking leaves no posture, so auto mode applies again', () => {
 
 test('ticking replaces an existing bypass rather than appending a second flag', () => {
   const out = withPermissionStance('claude --permission-mode bypassPermissions', true);
-  assert.equal(out, 'claude --permission-mode default');
+  assert.equal(out, 'claude --permission-mode acceptEdits');
   assert.equal(out.match(/--permission-mode/g).length, 1);
 });
 
@@ -42,7 +42,7 @@ test('unticking strips a non-default posture too, leaving nothing stale', () => 
 test('the = spelling is handled, not duplicated', () => {
   const out = withPermissionStance('claude --permission-mode=plan --model x', true);
   assert.equal(out.match(/--permission-mode/g).length, 1);
-  assert.match(out, /--permission-mode default$/);
+  assert.match(out, /--permission-mode acceptEdits$/);
   assert.match(out, /--model x/);
 });
 

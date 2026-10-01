@@ -505,8 +505,11 @@
   "addAgent": {
     "permission": "权限",
     "permissionAsk": "执行风险操作前先询问我",
-    "permissionAskHint": "使该代理不受自动模式影响：它会在自己的终端中逐项等待授权。",
-    "permissionAskHintAutoOff": "自动模式已关闭，所有代理都会询问。此选项为该代理固定该设置。",
+    "permissionAskHint": "使该代理不受自动模式影响：日常工作自动进行，只在有风险的操作前停下来询问。",
+    "permissionAskHintAutoOff": "自动模式已关闭，所有代理都会在有风险的操作前询问。此选项为该代理固定该设置。",
+    "tools": "工具",
+    "noFileEdits": "永不编辑已有文件",
+    "noFileEditsHint": "移除 Edit 工具，因此该代理无法改写代码或文档。它仍可在自己的工作区中创建文件——蜂巢需要以此传递消息和记忆——所以请把工作目录设为允许它写入的位置。",
     "title": "添加智能体",
     "hireImported": "已导入 hire：",
     "byAuthor": " · 作者 {{author}}",
